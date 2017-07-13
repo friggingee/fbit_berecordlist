@@ -1,4 +1,4 @@
-module.tx_sbbberecordlist {
+module.tx_fbitberecordlist {
     settings {
         modules {
             sbb_pois {

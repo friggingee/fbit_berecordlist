@@ -1,6 +1,6 @@
 <?php
 
-namespace SBB\SbbPois\Hooks;
+namespace FBIT\BeRecordList\Hooks;
 
 use SBB\SbbPois\Domain\Model\News;
 use SBB\SbbPois\Domain\Model\Poi;

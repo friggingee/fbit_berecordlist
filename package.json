@@ -1,5 +1,5 @@
 {
-    "name": "sbb/sbb-berecordlist",
+    "name": "fbit/berecordlist",
     "type": "typo3-cms-extension",
     "description": "",
     "author": [],
@@ -8,7 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Sbb\\SbbBeRecordList\\": "Classes"
+            "FBIT\\BeRecordList\\": "Classes"
         }
     }
 }

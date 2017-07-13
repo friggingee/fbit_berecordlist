@@ -4,13 +4,13 @@ defined('TYPO3_MODE') || die('Access denied.');
 call_user_func(
     function () {
         if (TYPO3_MODE === 'BE') {
-            if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXT']['sbb_berecordlist']['modules'])) {
-                $modulesConfiguration = $GLOBALS['TYPO3_CONF_VARS']['EXT']['sbb_berecordlist']['modules'];
+            if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'])) {
+                $modulesConfiguration = $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'];
 
                 foreach ($modulesConfiguration as $extKey => $moduleConfiguration) {
                     \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
-                        'SBB.SbbBeRecordList',
-                        'sbb',
+                        'FBIT.BeRecordList',
+                        'web',
                         $extKey,
                         '',
                         [

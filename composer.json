@@ -1,5 +1,5 @@
 {
-  "name": "sbb/sbb-berecordlist",
+  "name": "fbit/berecordlist",
   "type": "typo3-cms-extension",
   "description": "Creates modules to view individual record lists.",
   "author": [
@@ -14,7 +14,7 @@
   },
   "autoload": {
     "psr-4": {
-      "SBB\\SbbBeRecordList\\": "Classes"
+      "FBIT\\BeRecordList\\": "Classes"
     }
   }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace SBB\SbbBeRecordList\Controller;
+namespace FBIT\BeRecordList\Controller;
 
 /***
  *
@@ -8,7 +8,7 @@ namespace SBB\SbbBeRecordList\Controller;
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
  *
- *  (c) 2017 Grigori Prokhorov <hello@feinberg.it>, feinberg.it for familie redlich digital GmbH
+ *  (c) 2017 Grigori Prokhorov <hello@feinberg.it>, feinberg.it
  *
  ***/
 
