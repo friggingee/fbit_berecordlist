@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <xliff version="1.0">
-    <file source-language="en" datatype="plaintext" original="messages" date="2017-03-22T00:00:00Z" product-name="sbb_sitepackage">
+    <file source-language="en" datatype="plaintext" original="messages" date="2017-03-22T00:00:00Z" product-name="fbit_berecordlist">
         <header/>
         <body>
            <trans-unit id="mlang_labels_tablabel">

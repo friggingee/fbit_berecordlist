@@ -11,6 +11,7 @@ class RecordListDrawFooterHook {
      * @param array $params
      * @param RecordList $recordList
      * @return string
+     * @throws \Exception
      */
     public function getDocHeaderMenu(array $params, RecordList &$recordList) {
         $extensionName = GeneralUtility::_GET('extension');
