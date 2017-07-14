@@ -2,6 +2,7 @@
 
 namespace FBIT\BeRecordList\Hooks;
 
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Recordlist\RecordList;
@@ -24,6 +25,10 @@ class RecordListDrawFooterHook {
 
         $menu = $recordList->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
         $menu->setIdentifier('berecordlist');
+
+        /** @var PageRenderer $pageRenderer */
+        $pageRenderer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Page\PageRenderer::class);
+        $pageRenderer->loadRequireJsModule('TYPO3/CMS/FbitBerecordlist/BeRecordList');
 
         $actions = [];
 
