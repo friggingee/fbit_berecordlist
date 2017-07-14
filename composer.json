@@ -1,5 +1,5 @@
 {
-  "name": "fbit/berecordlist",
+  "name": "fbit/fbit_berecordlist",
   "type": "typo3-cms-extension",
   "description": "Creates modules to view individual record lists.",
   "author": [
