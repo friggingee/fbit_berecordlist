@@ -15,6 +15,10 @@ class RecordListDrawFooterHook {
     public function getDocHeaderMenu(array $params, RecordList &$recordList) {
         $extensionName = GeneralUtility::_GET('extension');
 
+        if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName])) {
+            throw new \Exception('There seems to be no configuration available for EXT:' . $extensionName . '. Please refer to the README for more details.', 1500032366);
+        }
+
         $config = $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName];
 
         $menu = $recordList->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
