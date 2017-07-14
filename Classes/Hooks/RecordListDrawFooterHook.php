@@ -2,13 +2,7 @@
 
 namespace FBIT\BeRecordList\Hooks;
 
-use SBB\SbbPois\Domain\Model\News;
-use SBB\SbbPois\Domain\Model\Poi;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
-use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Recordlist\RecordList;
 
@@ -19,24 +13,25 @@ class RecordListDrawFooterHook {
      * @return string
      */
     public function getDocHeaderMenu(array $params, RecordList &$recordList) {
-        $configurationManager = GeneralUtility::makeInstance(ConfigurationManager::class);
-        $config = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
-var_dump($config);die();
+        $extensionName = GeneralUtility::_GET('extension');
+
+        $config = $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName];
+
         $menu = $recordList->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
         $menu->setIdentifier('berecordlist');
 
-        $actions = [
-            [
-                'table' => News::table,
-            ],
-            [
-                'table' => Poi::table,
-            ],
-        ];
+        $actions = [];
+
+        foreach ($config['tables'] as $tableName => $active) {
+            if ((bool)$active) {
+                $actions[] = ['table' => $tableName];
+            }
+        }
 
         foreach ($actions as $action) {
             $moduleUri = $_SERVER['REQUEST_URI'];
             $moduleUriParts = parse_url($moduleUri);
+            $moduleUriParameters = [];
             $moduleUriParameterStrings = explode('&', $moduleUriParts['query']);
 
             foreach ($moduleUriParameterStrings as $parameterString) {
@@ -61,7 +56,10 @@ var_dump($config);die();
             $active = ($recordList->table === $action['table']);
 
             $item = $menu->makeMenuItem()
-                ->setTitle('List ' . $this->getTableLabel($action['table']))
+                ->setTitle(
+                    $this->getLabel('backend.module.select.prefix')
+                    . ' "' . $this->getTableLabel($action['table']) . '"'
+                )
                 ->setHref($menuUri)
                 ->setActive($active);
             $menu->addMenuItem($item);
@@ -82,5 +80,12 @@ var_dump($config);die();
         }
 
         return $label;
+    }
+
+    protected function getLabel($key) {
+        return LocalizationUtility::translate(
+            'LLL:EXT:fbit_berecordlist/Resources/Private/Language/locallang_mod_module.xlf:' . $key,
+            'fbit_berecordlist'
+        );
     }
 }

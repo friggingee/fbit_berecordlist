@@ -23,12 +23,6 @@ use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
  */
 class ModuleController extends ActionController
 {
-    public function initializeAction() {
-        if (empty(GeneralUtility::_GP('table'))) {
-            GeneralUtility::_GETset('table', 'tx_news_domain_model_news');
-        }
-    }
-
     /**
      * action list
      *
@@ -36,8 +30,10 @@ class ModuleController extends ActionController
      */
     public function listAction()
     {
-        $config = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
-        $storagePid = (int)$config['persistence']['storagePid'];
+        $currentPluginName = str_replace('fbit_BeRecordList', '', $this->request->getPluginName());
+        $extensionName = GeneralUtility::camelCaseToLowerCaseUnderscored($currentPluginName);
+        $config = $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName];
+        $storagePid = (int)$config['storagePid'];
 
         // if no storage pid is set, use the current page.
         if ($storagePid === 0) {
@@ -46,7 +42,8 @@ class ModuleController extends ActionController
 
         $moduleArguments = [
             'id' => $storagePid,
-            'table' => (empty(GeneralUtility::_GP('table')) ? 'tx_news_domain_model_news' : GeneralUtility::_GP('table'))
+            'table' => (empty(GeneralUtility::_GP('table')) ? reset(array_keys($config['tables'])) : GeneralUtility::_GP('table')),
+            'extension' => $extensionName,
         ];
         $url = BackendUtility::getModuleUrl(
             'web_list',

@@ -7,7 +7,7 @@ if (TYPO3_MODE === 'BE') {
             \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule(
                 'fbit',
                 '',
-                'before:tools',
+                '',
                 '',
                 [
                     'access' => 'group,user',
