@@ -24,4 +24,4 @@ For each EXTKEY you add to `$GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlis
 
 ## Contributing
 
-Please open issues and pull requests [here](http://gitlab.feinberg.it/feinberg.it/fbit-berecordlist).
+Please open issues and pull requests [here](https://github.com/friggingee/fbit-berecordlist).
