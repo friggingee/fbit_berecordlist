@@ -13,6 +13,15 @@
             <trans-unit id="backend.module.select.prefix">
                 <source>List</source>
             </trans-unit>
+            <trans-unit id="backend.module.select.type">
+                <source>type</source>
+            </trans-unit>
+            <trans-unit id="backend.module.actions.new.prefix">
+                <source>Create new </source>
+            </trans-unit>
+            <trans-unit id="backend.module.actions.new.suffix">
+                <source> Record</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

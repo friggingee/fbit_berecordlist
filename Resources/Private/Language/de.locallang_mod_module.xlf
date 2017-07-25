@@ -16,6 +16,18 @@
                 <source>List</source>
                 <target>Liste</target>
             </trans-unit>
+            <trans-unit id="backend.module.select.type">
+                <source>type</source>
+                <target>Typ</target>
+            </trans-unit>
+            <trans-unit id="backend.module.actions.new.prefix">
+                <source>Create new </source>
+                <target>Neuen </target>
+            </trans-unit>
+            <trans-unit id="backend.module.actions.new.suffix">
+                <source> Record</source>
+                <target> Datensatz anlegen</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
