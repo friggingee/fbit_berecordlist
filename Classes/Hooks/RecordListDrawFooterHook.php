@@ -14,11 +14,11 @@ class RecordListDrawFooterHook {
      * @return string
      * @throws \Exception
      */
-    public function getDocHeaderMenu(array $params, RecordList &$recordList) {
-        $extensionName = GeneralUtility::_GET('extension');
-
-        // no extension? no processing.
-        if (empty($extensionName)) {
+    public function adjustWebListModule(array $params, RecordList &$recordList)
+    {
+        $extensionKey = GeneralUtility::_GET('extension');
+        // No extension key? No processing.
+        if (empty($extensionKey)) {
             return '';
         }
 

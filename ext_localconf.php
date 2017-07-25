@@ -6,6 +6,6 @@ call_user_func(
     {
         $extKey = 'fbit_berecordlist';
 
-        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['recordlist/Modules/Recordlist/index.php']['drawFooterHook'][] = 'FBIT\\BeRecordList\\Hooks\\RecordListDrawFooterHook->getDocHeaderMenu';
+        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['recordlist/Modules/Recordlist/index.php']['drawFooterHook'][] = \FBIT\BeRecordList\Hooks\RecordListDrawFooterHook::class . '->adjustWebListModule';
     }
 );
