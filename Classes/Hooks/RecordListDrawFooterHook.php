@@ -177,8 +177,8 @@ class RecordListDrawFooterHook
     protected function removeFooter()
     {
         $this->removeLayoutFeature('footer.fieldselection');
-        $this->removeLayoutFeature('footer.listoptions.extendedView');
-        $this->removeLayoutFeature('footer.listoptions.clipBoard');
+        $this->removeLayoutFeature('footer.listoptions.extendedview');
+        $this->removeLayoutFeature('footer.listoptions.clipboard');
         $this->removeLayoutFeature('footer.listoptions.localization');
     }
 

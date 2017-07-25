@@ -199,7 +199,7 @@ class ButtonBarGetButtonsHook
                     if ($buttonType !== null) {
                         $returnUrl .= '&recordtype=' . $buttonType;
                     }
-                    if ($buttonType !== null) {
+                    if ($buttonTypeColumn !== null) {
                         $returnUrl .= '&recordtypecolumn=' . $buttonTypeColumn;
                     }
 
