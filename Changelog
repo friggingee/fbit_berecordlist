@@ -1,3 +1,6 @@
+2017-07-25 Release 2.0.1
+ * fix typos in variable name and options paths
+
 2017-07-25 Release 2.0.0
  * add a host of different layout options
  * add support for listing of individual record types
