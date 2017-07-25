@@ -1,0 +1,15 @@
+body.footer-fieldselection-remove .fieldSelectBox {
+    display: none;
+}
+body.footer-listoptions-extendedview-remove label[for=checkLargeControl] {
+    display: none;
+}
+body.footer-listoptions-clipboard-remove label[for=checkShowClipBoard] {
+    display: none;
+}
+body.footer-listoptions-localization-remove label[for=checkLocalization] {
+    display: none;
+}
+body.header-pagepath-remove .module-docheader-bar-column-right {
+    display: none;
+}

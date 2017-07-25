@@ -12,7 +12,12 @@ namespace FBIT\BeRecordList\Controller;
  *
  ***/
 
+use Composer\Autoload\ClassLoader;
+use FBIT\BeRecordList\Utility\ModuleUtility;
+use TYPO3\ClassAliasLoader\ClassAliasLoader;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
@@ -23,27 +28,67 @@ use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 class ModuleController extends ActionController
 {
     /**
+     * @var array
+     */
+    protected $requestArguments = [];
+
+    /**
+     * @var int
+     */
+    protected $storagePid = 0;
+
+    /**
+     * initialize action
+     */
+    public function initializeAction() {
+        $this->requestArguments = $this->request->getArguments();
+    }
+
+    /**
      * action list
      *
      * @return void
      */
     public function listAction()
     {
-        $currentPluginName = str_replace('fbit_BeRecordList', '', $this->request->getPluginName());
+        $currentPluginName = substr($this->request->getPluginName(), strpos($this->request->getPluginName(), 'BeRecordList') + strlen('BeRecordList'), strlen($this->request->getPluginName()));
         $extensionName = GeneralUtility::camelCaseToLowerCaseUnderscored($currentPluginName);
-        $config = $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName];
-        $storagePid = (int)$config['storagePid'];
+        ModuleUtility::loadModuleConfigurationForExtension($extensionName);
+        $this->storagePid = (int)ModuleUtility::$moduleConfig['storagePid'];
 
         // if no storage pid is set, use the current page.
-        if ($storagePid === 0) {
-            $storagePid = GeneralUtility::_GP('id');
+        if ($this->storagePid === 0) {
+            $this->storagePid = GeneralUtility::_GP('id');
         }
+        $table = (empty(GeneralUtility::_GP('table')) ? reset(array_keys(ModuleUtility::$moduleConfig['tables'])) : GeneralUtility::_GP('table'));
 
         $moduleArguments = [
-            'id' => $storagePid,
-            'table' => (empty(GeneralUtility::_GP('table')) ? reset(array_keys($config['tables'])) : GeneralUtility::_GP('table')),
+            'id' => $this->storagePid,
+            'table' => $table,
             'extension' => $extensionName,
         ];
+
+        if (ModuleUtility::$moduleConfig['moduleLayout']['header']['menu']['showOneOptionPerRecordType']) {
+            if (GeneralUtility::_GP('recordtype') !== null) {
+                $recordType = GeneralUtility::_GP('recordtype');
+            } elseif (isset(ModuleUtility::$moduleConfig['tables'][$table]['allowedRecordTypes'][0])) {
+                $recordType = ModuleUtility::$moduleConfig['tables'][$table]['allowedRecordTypes'][0];
+            } else {
+                $recordType = 0;
+            }
+
+            if (GeneralUtility::_GP('recordtypecolumn')) {
+                $recordTypeColumn = GeneralUtility::_GP('recordtypecolumn');
+            } else {
+                $recordTypeColumn = $GLOBALS['TCA'][$table]['ctrl']['typeicon_column'];
+            }
+
+            if (!empty($recordTypeColumn)) {
+                $moduleArguments['recordtype'] = $recordType;
+                $moduleArguments['recordtypecolumn'] = $recordTypeColumn;
+            }
+        }
+
         $url = BackendUtility::getModuleUrl(
             'web_list',
             $moduleArguments
