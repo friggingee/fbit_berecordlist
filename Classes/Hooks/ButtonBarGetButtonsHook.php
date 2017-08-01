@@ -265,9 +265,15 @@ class ButtonBarGetButtonsHook
      */
     protected function removeDisabledDefaultButtons(array &$buttons): void
     {
-        if (is_array(ModuleUtility::$moduleConfig['moduleLayout']['header']['buttons'])) {
+        if (
+            is_array(ModuleUtility::$moduleConfig['moduleLayout']['header']['buttons']['left'])
+            || is_array(ModuleUtility::$moduleConfig['moduleLayout']['header']['buttons']['right'])
+        ) {
 
-            $buttonConfig = ModuleUtility::$moduleConfig['moduleLayout']['header']['buttons'];
+            $buttonConfig = [
+                'left' => ModuleUtility::$moduleConfig['moduleLayout']['header']['buttons']['left'],
+                'right' => ModuleUtility::$moduleConfig['moduleLayout']['header']['buttons']['right']
+            ];
 
             foreach ($buttons as $headerSide => $headerSideButtons) {
                 foreach ($headerSideButtons as $groupIndex => $groupButtons) {
@@ -286,12 +292,18 @@ class ButtonBarGetButtonsHook
                                 }
                                 break;
                             case ShortcutButton::class:
-                                if (array_key_exists('shortcut', $buttonConfig[$headerSide])) {
+                                if (
+                                    array_key_exists('shortcut', $buttonConfig[$headerSide])
+                                    || !$buttonConfig[$headerSide]['actions-system-shortcut-new']
+                                ) {
                                     $removeButton = !$buttonConfig[$headerSide]['shortcut'];
                                 }
                                 break;
                             case HelpButton::class:
-                                if (array_key_exists('csh', $buttonConfig[$headerSide])) {
+                                if (
+                                    array_key_exists('csh', $buttonConfig[$headerSide])
+                                    || !$buttonConfig[$headerSide]['actions-system-help-open']
+                                ) {
                                     $removeButton = !$buttonConfig[$headerSide]['csh'];
                                 }
                                 break;
@@ -388,7 +400,13 @@ class ButtonBarGetButtonsHook
                     }
                 }
 
-                if (count($sortedButtons[$headerSide], COUNT_RECURSIVE) === count($unsortedButtons[$headerSide], COUNT_RECURSIVE)) {
+                if (
+                    count($sortedButtons[$headerSide], COUNT_RECURSIVE) === count($unsortedButtons[$headerSide], COUNT_RECURSIVE)
+                    // @TODO this is quite a nasty "hack" since it implies that you could provide less buttons in the
+                    // sorting order array than there are buttons available which would lead to an unknown state for the
+                    // additional buttons.
+                    || ModuleUtility::isLayoutFeatureEnabled('moduleFromRecord')
+                ) {
                     $returnButtons[$headerSide] = $sortedButtons[$headerSide];
                 }
             }

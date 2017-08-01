@@ -2,11 +2,18 @@
 
 namespace FBIT\BeRecordList\Utility;
 
+use FBIT\BeRecordList\Domain\Model\Button;
+use FBIT\BeRecordList\Domain\Model\Module;
+use FBIT\BeRecordList\Domain\Model\Table;
+use FBIT\BeRecordList\Domain\Repository\ModuleRepository;
 use TYPO3\CMS\Backend\Template\Components\Buttons\Action\HelpButton;
 use TYPO3\CMS\Backend\Template\Components\Buttons\Action\ShortcutButton;
 use TYPO3\CMS\Backend\Template\Components\Buttons\LinkButton;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Localization\Parser\XliffParser;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class ModuleUtility
@@ -27,10 +34,173 @@ class ModuleUtility
      */
     static public $moduleConfig = [];
 
+    static protected $defaultButtons = [
+        'left' => [
+            [
+                'actions-document-new',
+            ],
+            [
+                'actions-page-open',
+            ],
+            [
+                'actions-document-export-csv',
+                'actions-document-export-t3d',
+            ],
+            [
+                'actions-search',
+            ],
+            [
+                'actions-document-paste-into',
+            ],
+        ],
+        'right' => [
+            [
+                'actions-system-cache-clear',
+                'actions-refresh',
+            ],
+            [
+                'actions-system-shortcut-new',
+            ],
+            [
+                'actions-system-help-open',
+            ],
+        ],
+    ];
+
     /**
      * @var string
      */
     static public $extensionName = '';
+
+    static public function getConfiguredModules(): array
+    {
+        $configuredModules = $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'];
+
+        /** @var ObjectManager $objectManager */
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        /** @var ModuleRepository $moduleRepository */
+        $moduleRepository = $objectManager->get(ModuleRepository::class);
+        $modules = $moduleRepository->findAll();
+
+        /** @var Module $module */
+        foreach ($modules as $module) {
+            $moduleTables = $module->getTables();
+            $tables = [];
+            /** @var Table $table */
+            foreach ($moduleTables as $table) {
+                if (!empty($table->getAllowedRecordTypes())) {
+                    $tables[$table->getTablename()]['allowedRecordTypes'] = explode(',', $table->getAllowedRecordTypes());
+                } else {
+                    $tables[$table->getTablename()] = true;
+                }
+            }
+
+            $buttonsLeft = explode(',', $module->getModulelayoutHeaderButtonsLeft());
+            $buttonsLeftOverride = $module->getModulelayoutHeaderButtonsLeftOverride();
+            foreach ($buttonsLeft as $buttonIndex => $buttonIdentifier) {
+                /** @var Button $button */
+                foreach ($buttonsLeftOverride as $button) {
+                    if ($button->getIdentifier() === $buttonIdentifier) {
+                        $buttonsLeft[$buttonIdentifier] = [
+                            'icon' => $button->getOverrideIdentifier(),
+                        ];
+                    } else {
+                        $buttonsLeft[$buttonIdentifier] = true;
+                    }
+                }
+                unset($buttonsLeft[$buttonIndex]);
+            }
+            foreach (self::$defaultButtons['left'] as $groupIndex => $groupButtons) {
+                foreach ($groupButtons as $buttonIndex => $buttonIdentifier) {
+                    if (!array_key_exists($buttonIdentifier, $buttonsLeft)) {
+                        $buttonsLeft[$buttonIdentifier] = false;
+                    }
+                }
+            }
+
+            $buttonsRight = explode(',', $module->getModulelayoutHeaderButtonsRight());
+            $buttonsRightOverride = $module->getModulelayoutHeaderButtonsRightOverride();
+            foreach ($buttonsRight as $buttonIndex => $buttonIdentifier) {
+                /** @var Button $button */
+                foreach ($buttonsRightOverride as $button) {
+                    if ($button->getIdentifier() === $buttonIdentifier) {
+                        $buttonsRight[$buttonIdentifier] = [
+                            'icon' => $button->getOverrideIdentifier(),
+                        ];
+                    } else {
+                        $buttonsRight[$buttonIdentifier] = true;
+                    }
+                }
+                unset($buttonsRight[$buttonIndex]);
+            }
+            foreach (self::$defaultButtons['right'] as $groupIndex => $groupButtons) {
+                foreach ($groupButtons as $buttonIndex => $buttonIdentifier) {
+                    if (!array_key_exists($buttonIdentifier, $buttonsLeft)) {
+                        $buttonsRight[$buttonIdentifier] = false;
+                    }
+                }
+            }
+
+            $sortedGroups = [
+                'left' => array_filter(
+                    array_map(
+                        function ($buttonIdentifier, $buttonData) {
+                            return (is_array($buttonData) ? [$buttonData['icon']] : ($buttonData ? [$buttonIdentifier] : null));
+                        },
+                        array_keys($buttonsLeft),
+                        $buttonsLeft
+                    )
+                ),
+                'right' => array_filter(
+                    array_map(
+                        function ($buttonIdentifier, $buttonData) {
+                            return (is_array($buttonData) ? [$buttonData['icon']] : ($buttonData ? [$buttonIdentifier] : null));
+                        },
+                        array_keys($buttonsRight),
+                        $buttonsRight
+                    )
+                ),
+            ];
+
+            $configuredModules[$module->getSignature()] = [
+                'icon' => $module->getIcon(),
+                'labels' => 'LLL:' . $module->getLabels(),
+                'storagePid' => $module->getStoragePid(),
+                'tables' => $tables,
+                'mainModule' => $module->getMainModule(),
+                'moduleLayout' => [
+                    'moduleFromRecord' => true,
+                    'header' => [
+                        'enabled' => $module->getModulelayoutHeaderEnabled(),
+                        'menu' => [
+                            'showOneOptionPerTable' => $module->getModulelayoutHeaderMenuShowoneoptionpertable(),
+                            'showOneOptionPerRecordType' => $module->getModulelayoutHeaderMenuShowoneoptionperrecordtype(),
+                        ],
+                        'pagepath' => $module->getModulelayoutHeaderPagepath(),
+                        'buttons' => [
+                            'enabled' => $module->getModulelayoutHeaderButtonsEnabled(),
+                            'left' => $buttonsLeft,
+                            'right' => $buttonsRight,
+                            'sorting' => $sortedGroups,
+                        ],
+                        'showOneNewRecordButtonPerTable' => $module->getModulelayoutHeaderButtonsShowonenewrecordbuttonpertable(),
+                        'showOneNewRecordButtonPerRecordType' => $module->getModulelayoutHeaderButtonsShowonenewrecordbuttonperrecordtype(),
+                    ],
+                    'footer' => [
+                        'enabled' => $module->getModulelayoutFooterEnabled(),
+                        'fieldselection' => $module->getModuleylayoutFooterFieldselection(),
+                        'listoptions' => [
+                            'extendedview' => $module->getModulelayoutFooterListoptionsExtendedview(),
+                            'clipboard' => $module->getModulelayoutFooterListoptionsClipboard(),
+                            'localization' => $module->getModulelayoutFooterListoptionsLocalization(),
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        return $configuredModules;
+    }
 
     /**
      * @param string $extensionName
@@ -42,12 +212,13 @@ class ModuleUtility
             throw new \Exception('No extension key provided.', 1500392363);
         }
 
-        if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName])) {
+        $configuredModules = self::getConfiguredModules();
+        if (!isset($configuredModules[$extensionName])) {
             throw new \Exception('There seems to be no configuration available for EXT:' . $extensionName . '. Please refer to the README for more details.', 1500032366);
         }
 
         self::$extensionName = $extensionName;
-        self::$moduleConfig = $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName];
+        self::$moduleConfig = $configuredModules[$extensionName];
     }
 
     /**

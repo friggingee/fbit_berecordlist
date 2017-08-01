@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2017-07-26T16:59:53Z" product-name="fbit_berecordlist">
+		<header/>
+		<body>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module">
+				<source>Module</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.signature">
+				<source>Signature</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.icon">
+				<source>Icon</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.labels">
+				<source>Labels</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.storage_pid">
+				<source>Storage Pid</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.main_module">
+				<source>Main Module</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_enabled">
+				<source>Modulelayout Header Enabled</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_menu_showoneoptionpertable">
+				<source>Modulelayout Header Menu Showoneoptionpertable</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_menu_showoneoptionperrecordtype">
+				<source>Modulelayout Header Menu Showoneoptionperrecordtype</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_pagepath">
+				<source>Modulelayout Header Pagepath</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_buttons_enabled">
+				<source>Modulelayout Header Buttons Enabled</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_buttons_showonenewrecordbuttonpertable">
+				<source>Modulelayout Header Buttons Showonenewrecordbuttonpertable</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_buttons_showonenewrecordbuttonperrecordtype">
+				<source>Modulelayout Header Buttons Showonenewrecordbuttonperrecordtype</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_footer_enabled">
+				<source>Modulelayout Footer Enabled</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.moduleylayout_footer_fieldselection">
+				<source>Moduleylayout Footer Fieldselection</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_footer_listoptions_extendedview">
+				<source>Modulelayout Footer Listoptions Extendedview</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_footer_listoptions_clipboard">
+				<source>Modulelayout Footer Listoptions Clipboard</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_footer_listoptions_localization">
+				<source>Modulelayout Footer Listoptions Localization</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.tables">
+				<source>Tables</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_buttons_left">
+				<source>Modulelayout Header Buttons Left</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_module.modulelayout_header_buttons_right">
+				<source>Modulelayout Header Buttons Right</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_table">
+				<source>Table</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_table.tablename">
+				<source>Tablename</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_table.allowed_record_types">
+				<source>Allowed Record Types</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_button">
+				<source>Button</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_button.identifier">
+				<source>Identifier</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_button.override_identifier">
+				<source>Override Identifier</source>
+			</trans-unit>
+			<trans-unit id="tx_fbitberecordlist_domain_model_button.header_side">
+				<source>Header Side</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

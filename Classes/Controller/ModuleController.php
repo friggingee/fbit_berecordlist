@@ -68,6 +68,23 @@ class ModuleController extends ActionController
             'extension' => $extensionName,
         ];
 
+        $this->adjustModuleArguments($table, $moduleArguments);
+
+        $url = BackendUtility::getModuleUrl(
+            'web_list',
+            $moduleArguments
+        );
+        HttpUtility::redirect($url);
+    }
+
+    /**
+     * Add record type and record type column arguments to module arguments if needed.
+     *
+     * @param string $table
+     * @param array $moduleArguments
+     */
+    protected function adjustModuleArguments(string $table, array &$moduleArguments): void
+    {
         if (ModuleUtility::$moduleConfig['moduleLayout']['header']['menu']['showOneOptionPerRecordType']) {
             if (GeneralUtility::_GP('recordtype') !== null) {
                 $recordType = GeneralUtility::_GP('recordtype');
@@ -88,11 +105,5 @@ class ModuleController extends ActionController
                 $moduleArguments['recordtypecolumn'] = $recordTypeColumn;
             }
         }
-
-        $url = BackendUtility::getModuleUrl(
-            'web_list',
-            $moduleArguments
-        );
-        HttpUtility::redirect($url);
     }
 }

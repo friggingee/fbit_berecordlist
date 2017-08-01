@@ -1,0 +1,2 @@
+# cat=module/configurator/enable/10; type=boolean; label=LLL:EXT:fbit_berecordlist/Resources/Private/Language/locallang_be.xlf:extmng.enableConfiguratorModule
+enableConfiguratorModule = 0

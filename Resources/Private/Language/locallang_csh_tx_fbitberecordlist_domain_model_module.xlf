@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2017-07-26T16:59:53Z" product-name="fbit_berecordlist">
+		<header/>
+		<body>
+			<trans-unit id="signature.description">
+				<source>signature</source>
+			</trans-unit>
+			<trans-unit id="icon.description">
+				<source>icon</source>
+			</trans-unit>
+			<trans-unit id="labels.description">
+				<source>labels</source>
+			</trans-unit>
+			<trans-unit id="storage_pid.description">
+				<source>storagePid</source>
+			</trans-unit>
+			<trans-unit id="main_module.description">
+				<source>mainModule</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_enabled.description">
+				<source>modulelayoutHeaderEnabled</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_menu_showoneoptionpertable.description">
+				<source>modulelayoutHeaderMenuShowoneoptionpertable</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_menu_showoneoptionperrecordtype.description">
+				<source>modulelayoutHeaderMenuShowoneoptionperrecordtype</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_pagepath.description">
+				<source>modulelayoutHeaderPagepath</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_buttons_enabled.description">
+				<source>modulelayoutHeaderButtonsEnabled</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_buttons_showonenewrecordbuttonpertable.description">
+				<source>modulelayoutHeaderButtonsShowonenewrecordbuttonpertable</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_buttons_showonenewrecordbuttonperrecordtype.description">
+				<source>modulelayoutHeaderButtonsShowonenewrecordbuttonperrecordtype</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_footer_enabled.description">
+				<source>modulelayoutFooterEnabled</source>
+			</trans-unit>
+			<trans-unit id="moduleylayout_footer_fieldselection.description">
+				<source>moduleylayoutFooterFieldselection</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_footer_listoptions_extendedview.description">
+				<source>modulelayoutFooterListoptionsExtendedview</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_footer_listoptions_clipboard.description">
+				<source>modulelayoutFooterListoptionsClipboard</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_footer_listoptions_localization.description">
+				<source>modulelayoutFooterListoptionsLocalization</source>
+			</trans-unit>
+			<trans-unit id="tables.description">
+				<source>tables</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_buttons_left.description">
+				<source>modulelayoutHeaderButtonsLeft</source>
+			</trans-unit>
+			<trans-unit id="modulelayout_header_buttons_right.description">
+				<source>modulelayoutHeaderButtonsRight</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

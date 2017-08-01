@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2017-07-26T16:59:53Z" product-name="fbit_berecordlist">
+		<header/>
+		<body>
+			<trans-unit id="tablename.description">
+				<source>tablename</source>
+			</trans-unit>
+			<trans-unit id="allowed_record_types.description">
+				<source>allowedRecordTypes</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
