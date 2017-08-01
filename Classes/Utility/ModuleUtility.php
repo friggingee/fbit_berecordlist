@@ -295,4 +295,24 @@ class ModuleUtility
         return $buttonAvailable;
     }
 
+    static public function setDisplayFields($table) {
+        if (is_array(ModuleUtility::$moduleConfig['tables'][$table]['displayFields'])) {
+            $backendUser = self::getBackendUserAuthentication();
+
+            $dispFields = [];
+            $tableDisplayFields = ModuleUtility::$moduleConfig['tables'][$table]['displayFields'];
+
+            foreach ($tableDisplayFields as $field => $configuration) {
+                $dispFields[$table][] = $field;
+            }
+
+            $dispFields[$table] = array_unique($dispFields[$table]);
+
+            $backendUser->pushModuleData('list/displayFields', $dispFields);
+        }
+    }
+
+    static public function getBackendUserAuthentication(): BackendUserAuthentication {
+        return $GLOBALS['BE_USER'];
+    }
 }

@@ -62,6 +62,8 @@ class ModuleController extends ActionController
         }
         $table = (empty(GeneralUtility::_GP('table')) ? reset(array_keys(ModuleUtility::$moduleConfig['tables'])) : GeneralUtility::_GP('table'));
 
+        ModuleUtility::setDisplayFields($table);
+
         $moduleArguments = [
             'id' => $this->storagePid,
             'table' => $table,
