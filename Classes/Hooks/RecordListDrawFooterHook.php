@@ -59,20 +59,48 @@ class RecordListDrawFooterHook
         return '';
     }
 
-    protected function adjustBody()
+    /**
+     * Wrapper function for all method calls which change the module body (which is not necessarily equal to the content
+     * of the body-tag but instead the HTML excluding the module header and footer HTML.
+     */
+    protected function adjustBody(): void
     {
         $this->adjustHeadline();
         $this->processDisplayFields();
     }
 
-    protected function processDisplayFields() {
+    /**
+     * Processes the output value of the additional columns shown in each record row by adjusting the rendered RecordList
+     * HTML.
+     *
+     * @throws \Exception
+     */
+    protected function processDisplayFields(): void
+    {
         $html = $this->recordList->body;
         $originalEncoding = mb_detect_encoding($html);
 
         // Load the current record list body as a DOM Document
         /** @var \DOMDocument $domDocument */
         $domDocument = new \DOMDocument('1.0', $originalEncoding);
+        // Avoid warnings for HTML5 tags.
+        // @see https://stackoverflow.com/questions/9149180/domdocumentloadhtml-error
+        libxml_use_internal_errors(true);
         $domDocument->loadHtml($html);
+        $errors = libxml_get_errors();
+        libxml_use_internal_errors(false);
+
+        /** @var \LibXMLError $error */
+        foreach ($errors as $error) {
+            if ($error->level > LIBXML_ERR_ERROR) {
+                $exception = new \Exception(
+                    'LIBXML_ERR_FATAL (' . $error->level . '): ' . $error->message,
+                    $error->code
+                );
+
+                throw $exception;
+            }
+        }
         $domDocument->encoding = $originalEncoding;
 
         // Find the record list table (in case there is more than one).
@@ -131,7 +159,6 @@ class RecordListDrawFooterHook
                             }
                         }
                     }
-
 
                     /** @var \DOMElement $tr */
                     $trs = $recordTable->getElementsByTagName('tr');
@@ -220,6 +247,9 @@ class RecordListDrawFooterHook
         }
     }
 
+    /**
+     * Checks all available header layout features' state and adjusts header footer accordingly.
+     */
     protected function adjustHeader(): void
     {
         if (ModuleUtility::isLayoutFeatureEnabled('header.enabled')) {
@@ -237,6 +267,9 @@ class RecordListDrawFooterHook
         }
     }
 
+    /**
+     * Checks all available footer layout features' state and adjusts the footer accordingly.
+     */
     protected function adjustFooter(): void
     {
         if (ModuleUtility::isLayoutFeatureEnabled('footer.enabled')) {
@@ -278,9 +311,11 @@ class RecordListDrawFooterHook
     }
 
     /**
+     * Calls the appropriate methods to disable a specific layout feature.
+     *
      * @param $layoutFeaturePath
      */
-    protected function removeLayoutFeature($layoutFeaturePath)
+    protected function removeLayoutFeature($layoutFeaturePath): void
     {
         $this->featureClasses[$layoutFeaturePath] = 'remove';
 
@@ -305,7 +340,10 @@ class RecordListDrawFooterHook
         }
     }
 
-    protected function removeFooter()
+    /**
+     * Calls all relevant methods to fully hide all footer elements.
+     */
+    protected function removeFooter(): void
     {
         $this->removeLayoutFeature('footer.fieldselection');
         $this->removeLayoutFeature('footer.listoptions.extendedview');
@@ -313,7 +351,10 @@ class RecordListDrawFooterHook
         $this->removeLayoutFeature('footer.listoptions.localization');
     }
 
-    protected function makeMenu()
+    /**
+     * Generates the dropdown menu used for table or record type selection.
+     */
+    protected function makeMenu(): void
     {
         /** @var Menu $menu */
         $menu = $this->recordList->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
@@ -399,10 +440,12 @@ class RecordListDrawFooterHook
     }
 
     /**
-     * @param array $action
+     * Generates the URI for a given menu item from the $actionConfiguration.
+     *
+     * @param array $actionConfiguration
      * @return string
      */
-    protected function getMenuUri(array $action)
+    protected function getMenuUri(array $actionConfiguration): string
     {
         $moduleUri = $_SERVER['REQUEST_URI'];
         $moduleUriParts = parse_url($moduleUri);
@@ -412,7 +455,7 @@ class RecordListDrawFooterHook
         foreach ($moduleUriParameterStrings as $parameterString) {
             $parameterParts = explode('=', $parameterString);
             if ($parameterParts[0] === 'table') {
-                $parameterParts[1] = $action['table'];
+                $parameterParts[1] = $actionConfiguration['table'];
             }
             $moduleUriParameters[$parameterParts[0]] = $parameterParts[1];
 
@@ -423,11 +466,11 @@ class RecordListDrawFooterHook
             // @TODO I'm sure there's a better way to get $moduleUri but this is stable for now.
             if (
                 ModuleUtility::$moduleConfig['moduleLayout']['header']['menu']['showOneOptionPerRecordType']
-                && isset($action['recordtype'])
-                && !empty($action['recordtypecolumn'])
+                && isset($actionConfiguration['recordtype'])
+                && !empty($actionConfiguration['recordtypecolumn'])
             ) {
-                $moduleUriParameters['recordtype'] = $action['recordtype'];
-                $moduleUriParameters['recordtypecolumn'] = $action['recordtypecolumn'];
+                $moduleUriParameters['recordtype'] = $actionConfiguration['recordtype'];
+                $moduleUriParameters['recordtypecolumn'] = $actionConfiguration['recordtypecolumn'];
             } elseif (
                 $parameterParts[0] === 'recordtype'
                 || $parameterParts[0] === 'recordtypecolumn'
