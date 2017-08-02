@@ -73,6 +73,44 @@ class RecordListDrawFooterHook
      * Processes the output value of the additional columns shown in each record row by adjusting the rendered RecordList
      * HTML.
      *
+     * Have a look at the comments in the method body for more details on what's happening.
+     *
+     * As to the why: In general, I can think of three options on how to influence the output of the value of a record's
+     * column in the RecordList.
+     *  First option is to XCLASS (or override via ['SYS']['Objects'], which is basically the same) the RecordList class
+     *      and add your own processing. This is the most flexible approach but also the most invasive. As we all know
+     *      XCLASS'ed classes can be overwritten by any extension but also are prone to overwrite already existing
+     *      XCLASSes, none of which is really a good thing which is why I try really hard to avoid this.
+     *  The second option and the best approach IMHO, would be to use Signal Slots. Only issue is: there are literally
+     *      none in the whole codebase which is used by EXT:recordlist (yes, including all extension-external classes).
+     *  The third approach would be to use hooks. Now, there are no hooks in EXT:recordlist itself but it makes use of
+     *      classes and methods which contain hooks which are actually called exactly where we'd need them to affect the
+     *      record's column value output.
+     *
+     *      These hooks are triggered in \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList::renderListRow() which uses
+     *      \TYPO3\CMS\Backend\Utility\BackendUtility::getProcessedValueExtra() which in turn calls
+     *      \TYPO3\CMS\Backend\Utility\BackendUtility::getProcessedValue().
+     *
+     *      This final method contains two hooks which are:
+     *      $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_befunc.php']['preProcessValue'] and
+     *      $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_befunc.php']['postProcessValue'].
+     *
+     *      Now, one might assume that this is it and we simply register some generic processing functions in a utility
+     *      class to change the column value output to our heart's content but far from it! You see, whoever added
+     *      these hooks to the BackendUtility didn't seem to consider that a hook alone is not enough but it also has
+     *      to properly convey the context in which it is being called.
+     *      Both these hooks fail to do so since they get no reference passed to the field they are being called on
+     *      which makes it completely impossible to figure out which output transformation should be applied.
+     *      This is also a reported issue on the forge https://forge.typo3.org/issues/32169, 5 years old to date and
+     *      still unresolved (not that it would take a lot to fix it, honestly).
+     *
+     * However, this leaves me with just one option as of now which is to do what I do in this method which is to
+     * manually parse and adjust the DOM of the already rendered RecordList HTML, meanwhile relying on a host of
+     * assumptions on the precise structure of it.
+     * I like this approach as little as the next developer but that's the best I can come up with short of XCLASSing.
+     *
+     * This whole method is thus subject to change.
+     *
      * @throws \Exception
      */
     protected function processDisplayFields(): void
