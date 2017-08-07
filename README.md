@@ -12,12 +12,12 @@ To create a new "record list" you need to add the following configuration to you
 $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules']['YOUR_EXTKEY'] = [
     'icon' => 'EXT:your_extkey/Resources/Public/Icons/your_module_icon.svg',
     'labels' => 'LLL:EXT:your_extkey/Resources/Private/Language/locallang_mod_yourmodll.xlf',
-    'storagePid' => (provide a single page uid as an integer here),
+    'storagePid' => '(provide a single page uid as an integer here)',
     'tables' => [
         'tx_yourext_domain_model_name' => true,
         'tx_yourext_domain_model_name2' => [
             'allowedRecordTypes' => [
-                (integer value of allowed record type, see the table's TCA type column configuration and items)
+                '(integer value of allowed record type, see the table's TCA type column configuration and items)'
             ],
             'displayFields' => [
                 // Items in this array will override any preset displayFields (either set by TCA or field selection
