@@ -68,6 +68,9 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
         $tableDisplayFields = ModuleUtility::$moduleConfig['tables'][$table]['displayFields'];
         if (is_array($tableDisplayFields)) {
             $displayFields = array_keys($tableDisplayFields);
+            foreach ($displayFields as $displayField) {
+                $recordList->addElement_tdCssClass[$displayField] = 'col-displayfield-' . $displayField;
+            }
         }
 
         $selectedFieldsList = implode(',', array_unique(array_merge($this->defaultSelectedFields, $displayFields)));
@@ -118,7 +121,6 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
         $returnUrl = GeneralUtility::_GET('returnUrl');
         if (!empty($returnUrl)) {
             $redirect = false;
-            $redirectUrl = '';
 
             $returnUrlParts = explode('?', $returnUrl);
             $returnUrlParameters = explode('&', $returnUrlParts[1]);

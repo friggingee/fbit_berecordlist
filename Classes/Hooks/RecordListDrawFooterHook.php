@@ -141,24 +141,6 @@ class RecordListDrawFooterHook
         }
         $domDocument->encoding = $originalEncoding;
 
-        // Find the record list table (in case there is more than one).
-        /** @var \DOMNodeList $tables */
-        $tables = $domDocument->getElementsByTagName('table');
-        $recordTable = null;
-
-        /** @var \DOMElement $table */
-        foreach ($tables as $table) {
-            if ($table->attributes->length > 0) {
-                /** @var \DOMAttr $attribute */
-                foreach ($table->attributes as $attribute) {
-                    if ($attribute->name === 'data-table' && $attribute->value === $this->recordList->table) {
-                        /** @var \DOMElement $recordTable */
-                        $recordTable = $table;
-                    }
-                }
-            }
-        }
-
         // Process display fields settings
         if (is_array(ModuleUtility::$moduleConfig['tables'][$this->recordList->table]['displayFields'])) {
             foreach (ModuleUtility::$moduleConfig['tables'][$this->recordList->table]['displayFields'] as $field => $configuration) {
@@ -172,39 +154,11 @@ class RecordListDrawFooterHook
                     $procFuncData = explode('->', $configuration['displayProcFunc']);
                     $procFuncObject = GeneralUtility::makeInstance($procFuncData[0]);
 
-                    // Find the index of the table column corresponding to the field in question.
-                    // We make a few assumptions here:
-                    // 1. The header row contains all fields also shown in each record row.
-                    // 2. Each relevant header column contains a link to edit the respective field value for all records
-                    //    shown
-                    // 2.1. This edit link can be matched to the field in question by looking at the content of its
-                    //      "data-uri"-attribute value, namely the "columnsOnly=*" parameter contained in it.
-                    // 3. The actual record rows contain one column more than the header which is used to display the
-                    //    action buttons (edit, hide, delete, etc.), thus we add one to the index.
-                    // 3.1. All additional displayFields are displayed AFTER the action buttons column so we don't have
-                    //      to deal with the column index in more sophisticated ways.
+                    $fieldTds = $domDocument->getElementsByTagName('td');
 
-                    // Find the index of the column in question
-                    $tdIndex = 1;
-
-                    /** @var \DOMElement $th */
-                    foreach ($recordTable->getElementsByTagName('th') as $thIndex => $th) {
-                        if ($th->getElementsByTagName('a')->item(0)->attributes->length > 0) {
-                            $dataUri = $th->getElementsByTagName('a')->item(0)->getAttribute('data-uri');
-
-                            if (preg_match('/columnsOnly=' . $field . '/', $dataUri)) {
-                                $tdIndex += $thIndex;
-                            }
-                        }
-                    }
-
-                    /** @var \DOMElement $tr */
-                    $trs = $recordTable->getElementsByTagName('tr');
-                    foreach ($trs as $tr) {
-                        $tds = $tr->getElementsByTagName('td');
-                        if ($tds->length > $tdIndex) {
-                            $currentTd = $tds->item($tdIndex);
-
+                    /** @var \DOMElement $fieldTd */
+                    foreach ($fieldTds as $fieldTd) {
+                        if (strstr($fieldTd->getAttribute('class'), 'col-displayfield-' . $field)) {
                             // call the user func found earlier
                             $newContent = utf8_encode(
                                 call_user_func(
@@ -215,34 +169,36 @@ class RecordListDrawFooterHook
                                     // current table
                                     $this->recordList->table,
                                     // record uid
-                                    $tr->getAttribute('data-uid'),
+                                    $fieldTd->parentNode->getAttribute('data-uid'),
                                     // current field
                                     $field,
                                     // current column value
-                                    $currentTd->textContent
+                                    $fieldTd->textContent
                                 )
                             );
 
-                            // Load the returned new column value into a DOM Fragment to check if it contains additional
-                            // HTML which we need to process differently.
-                            /** @var \DOMDocumentFragment $newContentDOM */
-                            $domFragment = $domDocument->createDocumentFragment();
-                            $domFragment->appendXML($newContent);
+                            if (!empty($newContent)) {
+                                // Load the returned new column value into a DOM Fragment to check if it contains additional
+                                // HTML which we need to process differently.
+                                /** @var \DOMDocumentFragment $newContentDOM */
+                                $domFragment = $domDocument->createDocumentFragment();
+                                $domFragment->appendXML(utf8_encode(html_entity_decode($newContent)));
 
-                            if (
-                                $domFragment->childNodes->length === 1
-                                && $domFragment->childNodes->item(0)->nodeType === XML_TEXT_NODE
-                            ) {
-                                // Only one child node of type text? This goes directly back into the current td node.
-                                $currentTd->textContent = $newContent;
-                            } else {
-                                // Additional HTML?
-                                // Remove all current children of the current td node...
-                                foreach ($currentTd->childNodes as $childNode) {
-                                    $currentTd->removeChild($childNode);
+                                if (
+                                    $domFragment->childNodes->length === 1
+                                    && $domFragment->childNodes->item(0)->nodeType === XML_TEXT_NODE
+                                ) {
+                                    // Only one child node of type text? This goes directly back into the current td node.
+                                    $fieldTd->textContent = $newContent;
+                                } else {
+                                    // Additional HTML?
+                                    // Remove all current children of the current td node...
+                                    foreach ($fieldTd->childNodes as $childNode) {
+                                        $fieldTd->removeChild($childNode);
+                                    }
+                                    // ...and replace them with the DOM Fragment we created.
+                                    $fieldTd->appendChild($domFragment);
                                 }
-                                // ...and replace them with the DOM Fragment we created.
-                                $currentTd->appendChild($domFragment);
                             }
                         }
                     }
