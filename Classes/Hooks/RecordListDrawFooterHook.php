@@ -52,11 +52,161 @@ class RecordListDrawFooterHook
         ModuleUtility::loadModuleLabels();
         ModuleUtility::buildAllowedLabels();
         $this->adjustHeader();
+        $this->adjustBody();
         $this->adjustFooter();
-        $this->adjustHeadline();
         $this->addFeatureClasses();
 
         return '';
+    }
+
+    /**
+     * Wrapper function for all method calls which change the module body (which is not necessarily equal to the content
+     * of the body-tag but instead the HTML excluding the module header and footer HTML.
+     */
+    protected function adjustBody(): void
+    {
+        $this->adjustHeadline();
+        $this->processDisplayFields();
+    }
+
+    /**
+     * Processes the output value of the additional columns shown in each record row by adjusting the rendered RecordList
+     * HTML.
+     *
+     * Have a look at the comments in the method body for more details on what's happening.
+     *
+     * As to the why: In general, I can think of three options on how to influence the output of the value of a record's
+     * column in the RecordList.
+     *  First option is to XCLASS (or override via ['SYS']['Objects'], which is basically the same) the RecordList class
+     *      and add your own processing. This is the most flexible approach but also the most invasive. As we all know
+     *      XCLASS'ed classes can be overwritten by any extension but also are prone to overwrite already existing
+     *      XCLASSes, none of which is really a good thing which is why I try really hard to avoid this.
+     *  The second option and the best approach IMHO, would be to use Signal Slots. Only issue is: there are literally
+     *      none in the whole codebase which is used by EXT:recordlist (yes, including all extension-external classes).
+     *  The third approach would be to use hooks. Now, there are no hooks in EXT:recordlist itself but it makes use of
+     *      classes and methods which contain hooks which are actually called exactly where we'd need them to affect the
+     *      record's column value output.
+     *
+     *      These hooks are triggered in \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList::renderListRow() which uses
+     *      \TYPO3\CMS\Backend\Utility\BackendUtility::getProcessedValueExtra() which in turn calls
+     *      \TYPO3\CMS\Backend\Utility\BackendUtility::getProcessedValue().
+     *
+     *      This final method contains two hooks which are:
+     *      $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_befunc.php']['preProcessValue'] and
+     *      $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_befunc.php']['postProcessValue'].
+     *
+     *      Now, one might assume that this is it and we simply register some generic processing functions in a utility
+     *      class to change the column value output to our heart's content but far from it! You see, whoever added
+     *      these hooks to the BackendUtility didn't seem to consider that a hook alone is not enough but it also has
+     *      to properly convey the context in which it is being called.
+     *      Both these hooks fail to do so since they get no reference passed to the field they are being called on
+     *      which makes it completely impossible to figure out which output transformation should be applied.
+     *      This is also a reported issue on the forge https://forge.typo3.org/issues/32169, 5 years old to date and
+     *      still unresolved (not that it would take a lot to fix it, honestly).
+     *
+     * However, this leaves me with just one option as of now which is to do what I do in this method which is to
+     * manually parse and adjust the DOM of the already rendered RecordList HTML.
+     *
+     * I like this approach as little as the next developer but that's the best I can come up with short of XCLASSing.
+     *
+     * @throws \Exception
+     */
+    protected function processDisplayFields(): void
+    {
+        $html = $this->recordList->body;
+        $originalEncoding = mb_detect_encoding($html);
+
+        // Load the current record list body as a DOM Document
+        /** @var \DOMDocument $domDocument */
+        $domDocument = new \DOMDocument('1.0', $originalEncoding);
+        // Avoid warnings for HTML5 tags.
+        // @see https://stackoverflow.com/questions/9149180/domdocumentloadhtml-error
+        libxml_use_internal_errors(true);
+        $domDocument->loadHtml($html);
+        $errors = libxml_get_errors();
+        libxml_use_internal_errors(false);
+
+        /** @var \LibXMLError $error */
+        foreach ($errors as $error) {
+            if ($error->level > LIBXML_ERR_ERROR) {
+                $exception = new \Exception(
+                    'LIBXML_ERR_FATAL (' . $error->level . '): ' . $error->message,
+                    $error->code
+                );
+
+                throw $exception;
+            }
+        }
+        $domDocument->encoding = $originalEncoding;
+
+        // Process display fields settings
+        if (is_array(ModuleUtility::$moduleConfig['tables'][$this->recordList->table]['displayFields'])) {
+            foreach (ModuleUtility::$moduleConfig['tables'][$this->recordList->table]['displayFields'] as $field => $configuration) {
+                // If the configuration contains an array key of "displayProcFunc", we assume that it's a function
+                // reference which shall be used to override the display value (plain text or HTML content) of a field
+                // column.
+                if (
+                    is_array($configuration)
+                    && !empty($configuration['displayProcFunc'])
+                ) {
+                    $procFuncData = explode('->', $configuration['displayProcFunc']);
+                    $procFuncObject = GeneralUtility::makeInstance($procFuncData[0]);
+
+                    $fieldTds = $domDocument->getElementsByTagName('td');
+
+                    /** @var \DOMElement $fieldTd */
+                    foreach ($fieldTds as $fieldTd) {
+                        if (strstr($fieldTd->getAttribute('class'), 'col-displayfield-' . $field)) {
+                            // call the user func found earlier
+                            $newContent = utf8_encode(
+                                call_user_func(
+                                    [
+                                        $procFuncObject,
+                                        $procFuncData[1],
+                                    ],
+                                    // current table
+                                    $this->recordList->table,
+                                    // record uid
+                                    $fieldTd->parentNode->getAttribute('data-uid'),
+                                    // current field
+                                    $field,
+                                    // current column value
+                                    $fieldTd->textContent
+                                )
+                            );
+
+                            if (!empty($newContent)) {
+                                // Load the returned new column value into a DOM Fragment to check if it contains additional
+                                // HTML which we need to process differently.
+                                /** @var \DOMDocumentFragment $newContentDOM */
+                                $domFragment = $domDocument->createDocumentFragment();
+                                $domFragment->appendXML(utf8_encode(html_entity_decode($newContent)));
+
+                                if (
+                                    $domFragment->childNodes->length === 1
+                                    && $domFragment->childNodes->item(0)->nodeType === XML_TEXT_NODE
+                                ) {
+                                    // Only one child node of type text? This goes directly back into the current td node.
+                                    $fieldTd->textContent = $newContent;
+                                } else {
+                                    // Additional HTML?
+                                    // Remove all current children of the current td node...
+                                    foreach ($fieldTd->childNodes as $childNode) {
+                                        $fieldTd->removeChild($childNode);
+                                    }
+                                    // ...and replace them with the DOM Fragment we created.
+                                    $fieldTd->appendChild($domFragment);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // str_replace("\xc2\xa0", ' ', $str) removes utf8_decoded &nbsp; characters which would otherwise show up as
+        // boxed question marks.
+        $this->recordList->body = utf8_decode(str_replace("\xc2\xa0", ' ', $domDocument->saveXML()));
     }
 
     /**
@@ -89,6 +239,9 @@ class RecordListDrawFooterHook
         }
     }
 
+    /**
+     * Checks all available header layout features' state and adjusts header footer accordingly.
+     */
     protected function adjustHeader(): void
     {
         if (ModuleUtility::isLayoutFeatureEnabled('header.enabled')) {
@@ -106,6 +259,9 @@ class RecordListDrawFooterHook
         }
     }
 
+    /**
+     * Checks all available footer layout features' state and adjusts the footer accordingly.
+     */
     protected function adjustFooter(): void
     {
         if (ModuleUtility::isLayoutFeatureEnabled('footer.enabled')) {
@@ -147,9 +303,11 @@ class RecordListDrawFooterHook
     }
 
     /**
+     * Calls the appropriate methods to disable a specific layout feature.
+     *
      * @param $layoutFeaturePath
      */
-    protected function removeLayoutFeature($layoutFeaturePath)
+    protected function removeLayoutFeature($layoutFeaturePath): void
     {
         $this->featureClasses[$layoutFeaturePath] = 'remove';
 
@@ -174,7 +332,10 @@ class RecordListDrawFooterHook
         }
     }
 
-    protected function removeFooter()
+    /**
+     * Calls all relevant methods to fully hide all footer elements.
+     */
+    protected function removeFooter(): void
     {
         $this->removeLayoutFeature('footer.fieldselection');
         $this->removeLayoutFeature('footer.listoptions.extendedview');
@@ -182,7 +343,10 @@ class RecordListDrawFooterHook
         $this->removeLayoutFeature('footer.listoptions.localization');
     }
 
-    protected function makeMenu()
+    /**
+     * Generates the dropdown menu used for table or record type selection.
+     */
+    protected function makeMenu(): void
     {
         /** @var Menu $menu */
         $menu = $this->recordList->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
@@ -268,10 +432,12 @@ class RecordListDrawFooterHook
     }
 
     /**
-     * @param array $action
+     * Generates the URI for a given menu item from the $actionConfiguration.
+     *
+     * @param array $actionConfiguration
      * @return string
      */
-    protected function getMenuUri(array $action)
+    protected function getMenuUri(array $actionConfiguration): string
     {
         $moduleUri = $_SERVER['REQUEST_URI'];
         $moduleUriParts = parse_url($moduleUri);
@@ -281,7 +447,7 @@ class RecordListDrawFooterHook
         foreach ($moduleUriParameterStrings as $parameterString) {
             $parameterParts = explode('=', $parameterString);
             if ($parameterParts[0] === 'table') {
-                $parameterParts[1] = $action['table'];
+                $parameterParts[1] = $actionConfiguration['table'];
             }
             $moduleUriParameters[$parameterParts[0]] = $parameterParts[1];
 
@@ -292,11 +458,11 @@ class RecordListDrawFooterHook
             // @TODO I'm sure there's a better way to get $moduleUri but this is stable for now.
             if (
                 ModuleUtility::$moduleConfig['moduleLayout']['header']['menu']['showOneOptionPerRecordType']
-                && isset($action['recordtype'])
-                && !empty($action['recordtypecolumn'])
+                && isset($actionConfiguration['recordtype'])
+                && !empty($actionConfiguration['recordtypecolumn'])
             ) {
-                $moduleUriParameters['recordtype'] = $action['recordtype'];
-                $moduleUriParameters['recordtypecolumn'] = $action['recordtypecolumn'];
+                $moduleUriParameters['recordtype'] = $actionConfiguration['recordtype'];
+                $moduleUriParameters['recordtypecolumn'] = $actionConfiguration['recordtypecolumn'];
             } elseif (
                 $parameterParts[0] === 'recordtype'
                 || $parameterParts[0] === 'recordtypecolumn'
