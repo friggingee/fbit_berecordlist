@@ -8,18 +8,36 @@ Initially, the extension does not do anything besides adding an empty main modul
 
 To create a new "record list" you need to add the following configuration to your extension's `ext_tables.php`:
 
-```
+```php
 $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules']['YOUR_EXTKEY'] = [
     'icon' => 'EXT:your_extkey/Resources/Public/Icons/your_module_icon.svg',
     'labels' => 'LLL:EXT:your_extkey/Resources/Private/Language/locallang_mod_yourmodll.xlf',
-    'storagePid' => (provide a single page uid as an integer here),
+    'storagePid' => '(provide a single page uid as an integer here)',
     'tables' => [
         'tx_yourext_domain_model_name' => true,
         'tx_yourext_domain_model_name2' => [
             'allowedRecordTypes' => [
-                (integer value of allowed record type, see the table's TCA type column configuration and items)
-            ]
-        ]
+                '(integer value of allowed record type, see the table\'s TCA type column configuration and items)'
+            ],
+            'displayFields' => [
+                // Items in this array will override any preset displayFields (either set by TCA or field selection
+                // below the recordlist.
+                //
+                // You may either enter a fieldname and set it to true to simply display its column and value for each
+                // record or you can assign an array to the fieldname containing the item
+                // "displayProcFunc" => "Classname->methodname" to invoke a user-defined method which transforms the
+                // record's column value.
+                'fieldname' => true,
+                // The parameters passed to the displayProcFunc are: $tablename, $recordUid, $fieldname, $columnValue.
+                // $columnValue should be taken as a reference. It contains the (HTML) text content which is rendered
+                // in the record list table column row of the current record. You may use HTML in your transformed
+                // value. Be vigilant about UTF8 - you might have to utf8_decode your content string to avoid encoding
+                // issues in the output.
+                'fieldname2' => [
+                    'displayProcFunc' => 'Classname->methodname',
+                ],
+            ],
+        ],
     ],
     // leave empty to use the default "fbit" main module
     'mainModule' => 'your_main_module_key',
