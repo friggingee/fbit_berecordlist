@@ -105,11 +105,9 @@ class RecordListDrawFooterHook
      *      still unresolved (not that it would take a lot to fix it, honestly).
      *
      * However, this leaves me with just one option as of now which is to do what I do in this method which is to
-     * manually parse and adjust the DOM of the already rendered RecordList HTML, meanwhile relying on a host of
-     * assumptions on the precise structure of it.
-     * I like this approach as little as the next developer but that's the best I can come up with short of XCLASSing.
+     * manually parse and adjust the DOM of the already rendered RecordList HTML.
      *
-     * This whole method is thus subject to change.
+     * I like this approach as little as the next developer but that's the best I can come up with short of XCLASSing.
      *
      * @throws \Exception
      */
