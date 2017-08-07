@@ -17,7 +17,7 @@ $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules']['YOUR_EXTKEY'
         'tx_yourext_domain_model_name' => true,
         'tx_yourext_domain_model_name2' => [
             'allowedRecordTypes' => [
-                '(integer value of allowed record type, see the table's TCA type column configuration and items)'
+                '(integer value of allowed record type, see the table\'s TCA type column configuration and items)'
             ],
             'displayFields' => [
                 // Items in this array will override any preset displayFields (either set by TCA or field selection
