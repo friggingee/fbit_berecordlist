@@ -85,8 +85,10 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
                                     $GLOBALS['SOBE']->MOD_SETTINGS['bigControlPanel'] = 'expanded';
                                     break;
                                 case 'unset':
+                                default:
                                     $this->databaseRecordList->allFields = 0;
                                     $GLOBALS['SOBE']->MOD_SETTINGS['bigControlPanel'] = 'collapsed';
+                                    break;
                             }
                         }
                         break;
@@ -98,6 +100,7 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
                                     $GLOBALS['SOBE']->MOD_SETTINGS['clipBoard'] = true;
                                     break;
                                 case 'unset':
+                                default:
                                     $GLOBALS['SOBE']->MOD_SETTINGS['clipBoard'] = false;
                                     break;
                             }
@@ -112,6 +115,7 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
                                     $GLOBALS['SOBE']->MOD_SETTINGS['localization'] = true;
                                     break;
                                 case 'unset':
+                                default:
                                     $this->databaseRecordList->pageOverlays = [];
                                     $this->databaseRecordList->languageIconTitles = [];
                                     $this->databaseRecordList->localizationView = false;
