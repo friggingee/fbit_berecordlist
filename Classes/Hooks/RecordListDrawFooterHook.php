@@ -60,13 +60,63 @@ class RecordListDrawFooterHook
     }
 
     /**
+     * Checks all available header layout features' state and adjusts header footer accordingly.
+     */
+    protected function adjustHeader(): void
+    {
+        if (ModuleUtility::isLayoutFeatureEnabled('header.enabled')) {
+            if (
+                ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerTable')
+                || ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerRecordType')
+            ) {
+                $this->makeMenu();
+            }
+            if (!ModuleUtility::isLayoutFeatureEnabled('header.pagepath')) {
+                $this->removeLayoutFeature('header.pagepath');
+            }
+        } else {
+            $this->removeLayoutFeature('header.enabled');
+        }
+    }
+
+    /**
      * Wrapper function for all method calls which change the module body (which is not necessarily equal to the content
-     * of the body-tag but instead the HTML excluding the module header and footer HTML.
+     * of the body-tag but instead the HTML excluding the module header and footer HTML).
      */
     protected function adjustBody(): void
     {
         $this->adjustHeadline();
-        $this->processDisplayFields();
+#        $this->processDisplayFields();
+    }
+
+    /**
+     * Changes the module headline (and disables the inline edit functionality for the current page title) depending on
+     * the availability of the required headline label and the module settings.
+     */
+    protected function adjustHeadline(): void
+    {
+        $moduleHeadlineKey = 'backend.module.headline';
+        if (ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerTable')) {
+            $moduleHeadlineKey = 'backend.module.headline.' . $this->recordList->table;
+        }
+        if (ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerRecordType')
+            && null !== GeneralUtility::_GET('recordtype')
+            && null !== GeneralUtility::_GET('recordtypecolumn')
+        ) {
+            $moduleHeadlineKey = 'backend.module.headline.' . $this->recordList->table . '.type.' . GeneralUtility::_GET('recordtype');
+        }
+
+        if (ModuleUtility::moduleLabelExists($moduleHeadlineKey)) {
+            $contentHTML = $this->recordList->body;
+
+            $newHeadline = ModuleUtility::translate($moduleHeadlineKey, ModuleUtility::$extensionName);
+
+            $this->recordList->body = preg_replace(
+                '/<h1 class="t3js-title-inlineedit">(.*?)<\/h1>/',
+                '<h1>' . $newHeadline . '</h1>',
+                $contentHTML
+            );
+        }
     }
 
     /**
@@ -210,56 +260,6 @@ class RecordListDrawFooterHook
     }
 
     /**
-     * Changes the module headline (and disables the inline edit functionality for the current page title) depending on
-     * the availability of the required headline label and the module settings.
-     */
-    protected function adjustHeadline(): void
-    {
-        $moduleHeadlineKey = 'backend.module.headline';
-        if (ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerTable')) {
-            $moduleHeadlineKey = 'backend.module.headline.' . $this->recordList->table;
-        }
-        if (ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerRecordType')
-            && null !== GeneralUtility::_GET('recordtype')
-            && null !== GeneralUtility::_GET('recordtypecolumn')
-        ) {
-            $moduleHeadlineKey = 'backend.module.headline.' . $this->recordList->table . '.type.' . GeneralUtility::_GET('recordtype');
-        }
-
-        if (ModuleUtility::moduleLabelExists($moduleHeadlineKey)) {
-            $contentHTML = $this->recordList->body;
-
-            $newHeadline = ModuleUtility::translate($moduleHeadlineKey, ModuleUtility::$extensionName);
-
-            $this->recordList->body = preg_replace(
-                '/<h1 class="t3js-title-inlineedit">(.*?)<\/h1>/',
-                '<h1>' . $newHeadline . '</h1>',
-                $contentHTML
-            );
-        }
-    }
-
-    /**
-     * Checks all available header layout features' state and adjusts header footer accordingly.
-     */
-    protected function adjustHeader(): void
-    {
-        if (ModuleUtility::isLayoutFeatureEnabled('header.enabled')) {
-            if (
-                ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerTable')
-                || ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerRecordType')
-            ) {
-                $this->makeMenu();
-            }
-            if (!ModuleUtility::isLayoutFeatureEnabled('header.pagepath')) {
-                $this->removeLayoutFeature('header.pagepath');
-            }
-        } else {
-            $this->removeLayoutFeature('header.enabled');
-        }
-    }
-
-    /**
      * Checks all available footer layout features' state and adjusts the footer accordingly.
      */
     protected function adjustFooter(): void
@@ -275,6 +275,10 @@ class RecordListDrawFooterHook
                     $this->removeLayoutFeature($layoutFeature);
                 }
             }
+
+            if (ModuleUtility::$moduleConfig['moduleLayout']['footer']['enabled'] === 'accordion') {
+                $this->makeFooterAccordion();
+            }
         } else {
             $this->removeFooter();
         }
@@ -284,7 +288,7 @@ class RecordListDrawFooterHook
      * Add classes to the body tag to manipulate the visibility of disabled module features via CSS before JS can actually
      * remove them from the DOM to avoid flickering.
      */
-    public function addFeatureClasses(): void
+    protected function addFeatureClasses(): void
     {
         foreach ($this->featureClasses as $baseClass => $status) {
             $baseClass = str_replace('.', '-', $baseClass);
@@ -316,8 +320,6 @@ class RecordListDrawFooterHook
                 $this->recordList->getModuleTemplate()->getDocHeaderComponent()->disable();
                 break;
             case 'footer.enabled':
-                $this->removeFooter();
-                break;
             case 'header.pagepath':
             case 'footer.fieldselection':
             case 'footer.listoptions.extendedview':
@@ -337,10 +339,7 @@ class RecordListDrawFooterHook
      */
     protected function removeFooter(): void
     {
-        $this->removeLayoutFeature('footer.fieldselection');
-        $this->removeLayoutFeature('footer.listoptions.extendedview');
-        $this->removeLayoutFeature('footer.listoptions.clipboard');
-        $this->removeLayoutFeature('footer.listoptions.localization');
+        $this->removeLayoutFeature('footer.enabled');
     }
 
     /**
@@ -480,5 +479,11 @@ class RecordListDrawFooterHook
         $menuUriQuery = implode('&', $menuUriParameterStrings);
 
         return $moduleUriParts[0] . '?' . $menuUriQuery;
+    }
+
+    protected function makeFooterAccordion(): void
+    {
+        $this->featureClasses['footer.accordion'] = 'initially-hidden';
+        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/FbitBerecordlist/FooterAccordion');
     }
 }

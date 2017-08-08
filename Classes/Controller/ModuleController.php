@@ -12,12 +12,8 @@ namespace FBIT\BeRecordList\Controller;
  *
  ***/
 
-use Composer\Autoload\ClassLoader;
 use FBIT\BeRecordList\Utility\ModuleUtility;
-use TYPO3\ClassAliasLoader\ClassAliasLoader;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
@@ -38,6 +34,26 @@ class ModuleController extends ActionController
     protected $storagePid = 0;
 
     /**
+     * @var string
+     */
+    protected $extensionName = '';
+
+    /**
+     * @var string
+     */
+    protected $table = '';
+
+    /**
+     * @var
+     */
+    protected $recordType;
+
+    /**
+     * @var string
+     */
+    protected $recordTypeColumn = '';
+
+    /**
      * initialize action
      */
     public function initializeAction() {
@@ -51,41 +67,23 @@ class ModuleController extends ActionController
      */
     public function listAction()
     {
-        $currentPluginName = substr($this->request->getPluginName(), strpos($this->request->getPluginName(), 'BeRecordList') + strlen('BeRecordList'), strlen($this->request->getPluginName()));
-        $extensionName = GeneralUtility::camelCaseToLowerCaseUnderscored($currentPluginName);
-        ModuleUtility::loadModuleConfigurationForExtension($extensionName);
-        $this->storagePid = (int)ModuleUtility::$moduleConfig['storagePid'];
-
-        // if no storage pid is set, use the current page.
-        if ($this->storagePid === 0) {
-            $this->storagePid = GeneralUtility::_GP('id');
-        }
-        $table = (empty(GeneralUtility::_GP('table')) ? reset(array_keys(ModuleUtility::$moduleConfig['tables'])) : GeneralUtility::_GP('table'));
+        $this->loadModuleConfiguration();
+        $this->setStoragePid();
+        $this->setTable();
 
         $moduleArguments = [
             'id' => $this->storagePid,
-            'table' => $table,
-            'extension' => $extensionName,
+            'table' => $this->table,
+            'extension' => $this->extensionName,
         ];
 
-        if (ModuleUtility::$moduleConfig['moduleLayout']['header']['menu']['showOneOptionPerRecordType']) {
-            if (GeneralUtility::_GP('recordtype') !== null) {
-                $recordType = GeneralUtility::_GP('recordtype');
-            } elseif (isset(ModuleUtility::$moduleConfig['tables'][$table]['allowedRecordTypes'][0])) {
-                $recordType = ModuleUtility::$moduleConfig['tables'][$table]['allowedRecordTypes'][0];
-            } else {
-                $recordType = 0;
-            }
+        if (ModuleUtility::isLayoutFeatureEnabled('header.menu.showOneOptionPerRecordType')) {
+            $this->setRecordType();
+            $this->setRecordTypeColumn();
 
-            if (GeneralUtility::_GP('recordtypecolumn')) {
-                $recordTypeColumn = GeneralUtility::_GP('recordtypecolumn');
-            } else {
-                $recordTypeColumn = $GLOBALS['TCA'][$table]['ctrl']['typeicon_column'];
-            }
-
-            if (!empty($recordTypeColumn)) {
-                $moduleArguments['recordtype'] = $recordType;
-                $moduleArguments['recordtypecolumn'] = $recordTypeColumn;
+            if (!empty($this->recordTypeColumn)) {
+                $moduleArguments['recordtype'] = $this->recordType;
+                $moduleArguments['recordtypecolumn'] = $this->recordTypeColumn;
             }
         }
 
@@ -94,5 +92,54 @@ class ModuleController extends ActionController
             $moduleArguments
         );
         HttpUtility::redirect($url);
+    }
+
+    protected function loadModuleConfiguration(): void
+    {
+        $currentPluginName = substr(
+            $this->request->getPluginName(),
+            strpos($this->request->getPluginName(), 'BeRecordList') + strlen('BeRecordList'),
+            strlen($this->request->getPluginName())
+        );
+        $this->extensionName = GeneralUtility::camelCaseToLowerCaseUnderscored($currentPluginName);
+        ModuleUtility::loadModuleConfigurationForExtension($this->extensionName);
+    }
+
+    protected function setStoragePid(): void
+    {
+        $this->storagePid = (int)ModuleUtility::$moduleConfig['storagePid'];
+
+        // if no storage pid is set, use the current page.
+        if ($this->storagePid === 0) {
+            $this->storagePid = GeneralUtility::_GP('id');
+        }
+    }
+
+    protected function setTable(): void
+    {
+        $this->table = GeneralUtility::_GP('table');
+        if (empty($this->table)) {
+            $this->table = reset(array_keys(ModuleUtility::$moduleConfig['tables']));
+        }
+    }
+
+    protected function setRecordType(): void
+    {
+        $this->recordType = 0;
+
+        if (GeneralUtility::_GP('recordtype') !== null) {
+            $this->recordType = GeneralUtility::_GP('recordtype');
+        } elseif (isset(ModuleUtility::$moduleConfig['tables'][$this->table]['allowedRecordTypes'][0])) {
+            $this->recordType = ModuleUtility::$moduleConfig['tables'][$this->table]['allowedRecordTypes'][0];
+        }
+    }
+
+    protected function setRecordTypeColumn(): void
+    {
+        $this->recordTypeColumn = $GLOBALS['TCA'][$this->table]['ctrl']['typeicon_column'];
+
+        if (GeneralUtility::_GP('recordtypecolumn')) {
+            $this->recordTypeColumn = GeneralUtility::_GP('recordtypecolumn');
+        }
     }
 }

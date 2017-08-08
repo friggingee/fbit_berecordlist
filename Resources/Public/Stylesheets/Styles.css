@@ -1,15 +1,37 @@
+body.footer-enabled-remove .fieldSelectBox,
 body.footer-fieldselection-remove .fieldSelectBox {
     display: none;
 }
+body.footer-enabled-remove label[for=checkLargeControl],
 body.footer-listoptions-extendedview-remove label[for=checkLargeControl] {
     display: none;
 }
+body.footer-enabled-remove label[for=checkShowClipBoard],
 body.footer-listoptions-clipboard-remove label[for=checkShowClipBoard] {
     display: none;
 }
+body.footer-enabled-remove label[for=checkLocalization],
 body.footer-listoptions-localization-remove label[for=checkLocalization] {
     display: none;
 }
 body.header-pagepath-remove .module-docheader-bar-column-right {
+    display: none;
+}
+
+body.footer-accordion-initially-hidden .fieldSelectBox,
+body.footer-accordion-initially-hidden .typo3-listOptions,
+body.footer-accordion-initially-hidden .db_list-dashboard {
+    display: none;
+}
+
+.footer-accordion {
+    width: 100%;
+}
+#footer-accordion-toggle {
+    width: 100%;
+    margin-bottom: 15px;
+    text-align: left;
+}
+.footer-accordion-content {
     display: none;
 }
