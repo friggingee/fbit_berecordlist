@@ -3,14 +3,17 @@ body.footer-fieldselection-remove .fieldSelectBox {
     display: none;
 }
 body.footer-enabled-remove label[for=checkLargeControl],
+body.footer-listoptions-extendedview-invisible label[for=checkLargeControl],
 body.footer-listoptions-extendedview-remove label[for=checkLargeControl] {
     display: none;
 }
 body.footer-enabled-remove label[for=checkShowClipBoard],
+body.footer-listoptions-clipboard-invisible label[for=checkShowClipBoard],
 body.footer-listoptions-clipboard-remove label[for=checkShowClipBoard] {
     display: none;
 }
 body.footer-enabled-remove label[for=checkLocalization],
+body.footer-listoptions-localization-invisible label[for=checkLocalization],
 body.footer-listoptions-localization-remove label[for=checkLocalization] {
     display: none;
 }

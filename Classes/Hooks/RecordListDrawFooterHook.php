@@ -271,7 +271,12 @@ class RecordListDrawFooterHook
                 'footer.listoptions.clipboard',
                 'footer.listoptions.localization',
             ] as $layoutFeature) {
-                if (!ModuleUtility::isLayoutFeatureEnabled($layoutFeature)) {
+                $layoutFeatureSetting = ModuleUtility::getModuleSettingByPath('moduleLayout.' . $layoutFeature);
+                $layoutFeatureSettingParts = explode('-', $layoutFeatureSetting);
+
+                if (!ModuleUtility::isLayoutFeatureEnabled($layoutFeature) || $layoutFeatureSettingParts[1] === 'invisible') {
+                    $this->featureClasses[$layoutFeature] = ($layoutFeatureSettingParts[1] === 'invisible' ? 'invisible' : 'remove');
+
                     $this->removeLayoutFeature($layoutFeature);
                 }
             }
@@ -313,8 +318,6 @@ class RecordListDrawFooterHook
      */
     protected function removeLayoutFeature($layoutFeaturePath): void
     {
-        $this->featureClasses[$layoutFeaturePath] = 'remove';
-
         switch ($layoutFeaturePath) {
             case 'header.enabled':
                 $this->recordList->getModuleTemplate()->getDocHeaderComponent()->disable();
