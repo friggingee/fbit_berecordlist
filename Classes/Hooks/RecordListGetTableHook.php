@@ -74,45 +74,52 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
             if ($layoutFeatureSetting !== true) {
                 $layoutFeatureSettingParts = explode('-', $layoutFeatureSetting);
 
+                $requestSET = GeneralUtility::_GP('SET');
+
                 switch ($layoutFeaturePath) {
                     case 'footer.listoptions.extendedview':
-                        switch ($layoutFeatureSettingParts[0]) {
-                            case 'set':
-                                $this->databaseRecordList->allFields = 1;
-                                $GLOBALS['SOBE']->MOD_SETTINGS['bigControlPanel'] = 'expanded';
-                                break;
-                            case 'unset':
-                                $this->databaseRecordList->allFields = 0;
-                                $GLOBALS['SOBE']->MOD_SETTINGS['bigControlPanel'] = 'collapsed';
+                        if (empty($requestSET['bigControlPanel'])) {
+                            switch ($layoutFeatureSettingParts[0]) {
+                                case 'set':
+                                    $this->databaseRecordList->allFields = 1;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['bigControlPanel'] = 'expanded';
+                                    break;
+                                case 'unset':
+                                    $this->databaseRecordList->allFields = 0;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['bigControlPanel'] = 'collapsed';
+                            }
                         }
                         break;
                     case 'footer.listoptions.clipboard':
-                        switch ($layoutFeatureSettingParts[0]) {
-                            case 'set':
-                                $this->databaseRecordList->showClipboard = true;
-                                $GLOBALS['SOBE']->MOD_SETTINGS['clipBoard'] = true;
-                                break;
-                            case 'unset':
-                                $this->databaseRecordList->showClipboard = false;
-                                $GLOBALS['SOBE']->MOD_SETTINGS['clipBoard'] = false;
-                                break;
+                        if (empty($requestSET['clipBoard'])) {
+                            switch ($layoutFeatureSettingParts[0]) {
+                                case 'set':
+                                    $this->databaseRecordList->showClipboard = true;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['clipBoard'] = true;
+                                    break;
+                                case 'unset':
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['clipBoard'] = false;
+                                    break;
+                            }
                         }
                         break;
                     case 'footer.listoptions.localization':
-                        switch ($layoutFeatureSettingParts[0]) {
-                            case 'set':
-                                $this->databaseRecordList->initializeLanguages();
-                                $this->databaseRecordList->localizationView = true;
-                                $GLOBALS['SOBE']->MOD_SETTINGS['localization'] = true;
-                                break;
-                            case 'unset':
-                                $this->databaseRecordList->pageOverlays = [];
-                                $this->databaseRecordList->languageIconTitles = [];
-                                $this->databaseRecordList->localizationView = false;
-                                $GLOBALS['SOBE']->MOD_SETTINGS['localization'] = false;
-                                unset($this->defaultFieldArray[array_search('_LOCALIZATION_', $this->defaultFieldArray)]);
-                                unset($this->defaultFieldArray[array_search('_LOCALIZATION_b', $this->defaultFieldArray)]);
-                                break;
+                        if (empty($requestSET['localization'])) {
+                            switch ($layoutFeatureSettingParts[0]) {
+                                case 'set':
+                                    $this->databaseRecordList->initializeLanguages();
+                                    $this->databaseRecordList->localizationView = true;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['localization'] = true;
+                                    break;
+                                case 'unset':
+                                    $this->databaseRecordList->pageOverlays = [];
+                                    $this->databaseRecordList->languageIconTitles = [];
+                                    $this->databaseRecordList->localizationView = false;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['localization'] = false;
+                                    unset($this->defaultFieldArray[array_search('_LOCALIZATION_', $this->defaultFieldArray)]);
+                                    unset($this->defaultFieldArray[array_search('_LOCALIZATION_b', $this->defaultFieldArray)]);
+                                    break;
+                            }
                         }
                         break;
                 }

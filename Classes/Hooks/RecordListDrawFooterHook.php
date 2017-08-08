@@ -86,7 +86,7 @@ class RecordListDrawFooterHook
     protected function adjustBody(): void
     {
         $this->adjustHeadline();
-#        $this->processDisplayFields();
+        $this->processDisplayFields();
     }
 
     /**
@@ -230,7 +230,21 @@ class RecordListDrawFooterHook
                                 // HTML which we need to process differently.
                                 /** @var \DOMDocumentFragment $newContentDOM */
                                 $domFragment = $domDocument->createDocumentFragment();
-                                $domFragment->appendXML(utf8_encode(html_entity_decode($newContent)));
+                                $domFragment->appendXML(
+                                    utf8_encode(
+                                        html_entity_decode(
+                                            preg_replace(
+                                                '/(<br \/>)+/',
+                                                '<br />',
+                                                preg_replace(
+                                                    '/[\n\r]\s+/m',
+                                                    ' ',
+                                                    $newContent
+                                                )
+                                            )
+                                        )
+                                    )
+                                );
 
                                 if (
                                     $domFragment->childNodes->length === 1
@@ -256,7 +270,13 @@ class RecordListDrawFooterHook
 
         // str_replace("\xc2\xa0", ' ', $str) removes utf8_decoded &nbsp; characters which would otherwise show up as
         // boxed question marks.
-        $this->recordList->body = utf8_decode(str_replace("\xc2\xa0", ' ', $domDocument->saveXML()));
+        $this->recordList->body = utf8_decode(
+            str_replace(
+                "\xc2\xa0",
+                ' ',
+                $domDocument->saveXML($domDocument,LIBXML_NOEMPTYTAG)
+            )
+        );
     }
 
     /**
