@@ -139,6 +139,25 @@ class ModuleUtility
         return $featureEnabled;
     }
 
+    /**
+     * @param string $path
+     * @return mixed
+     */
+    static public function getModuleSettingByPath(string $path)
+    {
+        $pathParts = explode('.', $path);
+
+        $settingValue = self::$moduleConfig[$pathParts[0]];
+
+        if (is_array($settingValue)) {
+            for ($i = 1; $i < count($pathParts); $i++) {
+                $settingValue = $settingValue[$pathParts[$i]];
+            }
+        }
+
+        return $settingValue;
+    }
+
     static public function buildAllowedLabels(): void
     {
         self::buildMenuSelectLabels();

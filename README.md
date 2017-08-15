@@ -98,11 +98,22 @@ $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules']['YOUR_EXTKEY'
             'showOneNewRecordButtonPerRecordType' => true,
         ],
         'footer' => [
+            // false => fully removed, true => fully visible (depending on further configuration),
+            // 'accordion' => create footer "show/hide" button
             'enabled' => false,
             // show the list of possible columns to display in the table?
             'fieldselection' => true,
             // show the checkboxes at the bottom?
             'listoptions' => [
+                // Use either boolean values to only affect visibility but not the current status determined by
+                // the BE-user session values
+                //
+                // true => visible, status as is; false => invisible, status as is;
+                //
+                // Or use string values to set visibility and initial checkbox (and thus feature) status
+                //
+                // 'set-visible' => visible, status is set; 'set-invisible' => invisible, status is set;
+                // 'unset-visible' => visible, status is unset; 'unset-invisible' => invisible, status is unset;
                 'extendedview' => true,
                 'clipboard' => true,
                 'localization' => true,

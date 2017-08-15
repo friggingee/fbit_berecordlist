@@ -13,6 +13,11 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
 {
     protected $extensionName = '';
 
+    /**
+     * @var DatabaseRecordList $databaseRecordList
+     */
+    protected $databaseRecordList;
+
     protected $defaultSelectedFields = [
         'title',
         'uid',
@@ -44,12 +49,85 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
      */
     public function getDBlistQuery($table, $pageId, &$additionalWhereClause, &$selectedFieldsList, &$parentObject)
     {
+        $this->databaseRecordList = &$parentObject;
+
         $this->redirectIfBackFromLocalization();
 
         $this->extensionName = GeneralUtility::_GP('extension');
         if (!empty($this->extensionName)) {
+            ModuleUtility::loadModuleConfigurationForExtension($this->extensionName);
+            $this->setRecordListFeatures();
             $this->addRecordTypeParametersToQuery($table, $pageId, $additionalWhereClause, $parentObject);
             $this->setDisplayFields($table, $selectedFieldsList, $parentObject);
+        }
+    }
+
+    protected function setRecordListFeatures(): void
+    {
+        foreach ([
+            'footer.listoptions.extendedview',
+            'footer.listoptions.clipboard',
+            'footer.listoptions.localization'
+        ] as $layoutFeaturePath) {
+            $layoutFeatureSetting = ModuleUtility::getModuleSettingByPath('moduleLayout.' . $layoutFeaturePath);
+
+            if ($layoutFeatureSetting !== true) {
+                $layoutFeatureSettingParts = explode('-', $layoutFeatureSetting);
+
+                $requestSET = GeneralUtility::_GP('SET');
+
+                switch ($layoutFeaturePath) {
+                    case 'footer.listoptions.extendedview':
+                        if (empty($requestSET['bigControlPanel'])) {
+                            switch ($layoutFeatureSettingParts[0]) {
+                                case 'set':
+                                    $this->databaseRecordList->allFields = 1;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['bigControlPanel'] = 'expanded';
+                                    break;
+                                case 'unset':
+                                default:
+                                    $this->databaseRecordList->allFields = 0;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['bigControlPanel'] = 'collapsed';
+                                    break;
+                            }
+                        }
+                        break;
+                    case 'footer.listoptions.clipboard':
+                        if (empty($requestSET['clipBoard'])) {
+                            switch ($layoutFeatureSettingParts[0]) {
+                                case 'set':
+                                    $this->databaseRecordList->showClipboard = true;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['clipBoard'] = true;
+                                    break;
+                                case 'unset':
+                                default:
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['clipBoard'] = false;
+                                    break;
+                            }
+                        }
+                        break;
+                    case 'footer.listoptions.localization':
+                        if (empty($requestSET['localization'])) {
+                            switch ($layoutFeatureSettingParts[0]) {
+                                case 'set':
+                                    $this->databaseRecordList->initializeLanguages();
+                                    $this->databaseRecordList->localizationView = true;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['localization'] = true;
+                                    break;
+                                case 'unset':
+                                default:
+                                    $this->databaseRecordList->pageOverlays = [];
+                                    $this->databaseRecordList->languageIconTitles = [];
+                                    $this->databaseRecordList->localizationView = false;
+                                    $GLOBALS['SOBE']->MOD_SETTINGS['localization'] = false;
+                                    unset($this->defaultFieldArray[array_search('_LOCALIZATION_', $this->defaultFieldArray)]);
+                                    unset($this->defaultFieldArray[array_search('_LOCALIZATION_b', $this->defaultFieldArray)]);
+                                    break;
+                            }
+                        }
+                        break;
+                }
+            }
         }
     }
 
@@ -64,7 +142,6 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
     {
         $displayFields = [];
 
-        ModuleUtility::loadModuleConfigurationForExtension($this->extensionName);
         $tableDisplayFields = ModuleUtility::$moduleConfig['tables'][$table]['displayFields'];
         if (is_array($tableDisplayFields)) {
             $displayFields = array_keys($tableDisplayFields);
