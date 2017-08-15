@@ -1,3 +1,7 @@
+2017-07-15 Release 2.2.0
+ * add new options for footer checkboxes - now you're able to predefine their state as well as their visibility
+ * optimize displayFields rendering
+
 2017-08-07 Release 2.1.0
  * add processing options for displayFields
 
