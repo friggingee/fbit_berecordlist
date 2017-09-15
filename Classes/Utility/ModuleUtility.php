@@ -93,7 +93,7 @@ class ModuleUtility
         $ll = self::$moduleConfig['labels'];
         $translated = LocalizationUtility::translate($ll . ':' . $key, $extension);
         // translated can be null
-        return ($translated === null)?$translated:'';
+        return ($translated !== null)?$translated:$key;
     }
 
     /**
