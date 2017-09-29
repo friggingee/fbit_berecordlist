@@ -107,8 +107,9 @@ class ModuleUtility
         }
       
         $translated = LocalizationUtility::translate($ll . ':' . $key, $extension);
+
         // translated can be null
-        return ($translated !== null)?$translated:$key;
+        return ($translated !== null) ? $translated : $key;
     }
 
     /**
