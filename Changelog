@@ -1,3 +1,8 @@
+2017-09-29 Release 2.2.1
+ * fix issue when processing "&" in strings when transforming display fields
+ * merged "Fix/language translate Null exception" by https://github.com/brannow
+ * merged "fix wrong extension name usage in translate" by https://github.com/brannow
+
 2017-07-15 Release 2.2.0
  * add new options for footer checkboxes - now you're able to predefine their state as well as their visibility
  * optimize displayFields rendering
