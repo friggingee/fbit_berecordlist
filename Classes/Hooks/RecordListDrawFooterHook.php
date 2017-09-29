@@ -231,15 +231,19 @@ class RecordListDrawFooterHook
                                 /** @var \DOMDocumentFragment $newContentDOM */
                                 $domFragment = $domDocument->createDocumentFragment();
                                 $domFragment->appendXML(
-                                    utf8_encode(
-                                        html_entity_decode(
-                                            preg_replace(
-                                                '/(<br \/>)+/',
-                                                '<br />',
+                                    preg_replace(
+                                        '/&(?!#?[a-z0-9]+;)/',
+                                        '&amp;',
+                                        utf8_encode(
+                                            html_entity_decode(
                                                 preg_replace(
-                                                    '/[\n\r]\s+/m',
-                                                    ' ',
-                                                    $newContent
+                                                    '/(<br \/>)+/',
+                                                    '<br />',
+                                                    preg_replace(
+                                                        '/[\n\r]\s+/m',
+                                                        ' ',
+                                                        $newContent
+                                                    )
                                                 )
                                             )
                                         )
