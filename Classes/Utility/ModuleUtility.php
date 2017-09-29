@@ -93,6 +93,11 @@ class ModuleUtility
         );
     }
 
+    /**
+     * @param string $key
+     * @param string $extension
+     * @return string
+     */
     static public function translate(string $key, string $extension): string
     {
         $ll = self::$moduleConfig['labels'];
@@ -100,8 +105,10 @@ class ModuleUtility
         if (isset(self::$extensionNameMap[$extension])) {
             $extension = self::$extensionNameMap[$extension];
         }
-
-        return LocalizationUtility::translate($ll . ':' . $key, $extension);
+      
+        $translated = LocalizationUtility::translate($ll . ':' . $key, $extension);
+        // translated can be null
+        return ($translated !== null)?$translated:$key;
     }
 
     /**

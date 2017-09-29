@@ -4,6 +4,7 @@ namespace FBIT\BeRecordList\Hooks;
 
 use FBIT\BeRecordList\Utility\ModuleUtility;
 use TYPO3\CMS\Backend\Template\Components\Menu\Menu;
+use TYPO3\CMS\Core\Messaging\AbstractStandaloneMessage;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -230,36 +231,48 @@ class RecordListDrawFooterHook
                                 // HTML which we need to process differently.
                                 /** @var \DOMDocumentFragment $newContentDOM */
                                 $domFragment = $domDocument->createDocumentFragment();
-                                $domFragment->appendXML(
-                                    utf8_encode(
-                                        html_entity_decode(
-                                            preg_replace(
-                                                '/(<br \/>)+/',
-                                                '<br />',
-                                                preg_replace(
-                                                    '/[\n\r]\s+/m',
-                                                    ' ',
-                                                    $newContent
+                                try {
+                                    $domFragment->appendXML(
+                                        preg_replace(
+                                            '/&(?!#?[a-z0-9]+;)/',
+                                            '&amp;',
+                                            utf8_encode(
+                                                html_entity_decode(
+                                                    preg_replace(
+                                                        '/(<br \/>)+/',
+                                                        '<br />',
+                                                        preg_replace(
+                                                            '/[\n\r]\s+/m',
+                                                            ' ',
+                                                            $newContent
+                                                        )
+                                                    )
                                                 )
                                             )
                                         )
-                                    )
-                                );
+                                    );
 
-                                if (
-                                    $domFragment->childNodes->length === 1
-                                    && $domFragment->childNodes->item(0)->nodeType === XML_TEXT_NODE
-                                ) {
-                                    // Only one child node of type text? This goes directly back into the current td node.
-                                    $fieldTd->textContent = $newContent;
-                                } else {
-                                    // Additional HTML?
-                                    // Remove all current children of the current td node...
-                                    foreach ($fieldTd->childNodes as $childNode) {
-                                        $fieldTd->removeChild($childNode);
+                                    if (
+                                        $domFragment->childNodes->length === 1
+                                        && $domFragment->childNodes->item(0)->nodeType === XML_TEXT_NODE
+                                    ) {
+                                        // Only one child node of type text? This goes directly back into the current td node.
+                                        $fieldTd->textContent = $newContent;
+                                    } else {
+                                        // Additional HTML?
+                                        // Remove all current children of the current td node...
+                                        foreach ($fieldTd->childNodes as $childNode) {
+                                            $fieldTd->removeChild($childNode);
+                                        }
+                                        // ...and replace them with the DOM Fragment we created.
+                                        $fieldTd->appendChild($domFragment);
                                     }
-                                    // ...and replace them with the DOM Fragment we created.
-                                    $fieldTd->appendChild($domFragment);
+                                } catch (\Exception $exception) {
+                                    $this->recordList->getModuleTemplate()->addFlashMessage(
+                                        $newContent,
+                                        'An encoding error occurred while rendering the following text.',
+                                        AbstractStandaloneMessage::INFO
+                                    );
                                 }
                             }
                         }
@@ -274,7 +287,7 @@ class RecordListDrawFooterHook
             str_replace(
                 "\xc2\xa0",
                 ' ',
-                $domDocument->saveXML($domDocument,LIBXML_NOEMPTYTAG)
+                $domDocument->saveXML($domDocument, LIBXML_NOEMPTYTAG)
             )
         );
     }
