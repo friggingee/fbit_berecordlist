@@ -34,6 +34,11 @@ class ModuleUtility
     static public $extensionName = '';
 
     /**
+     * @var array
+     */
+    static public $extensionNameMap = [];
+
+    /**
      * @param string $extensionName
      * @throws \Exception
      */
@@ -45,6 +50,11 @@ class ModuleUtility
 
         if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName])) {
             throw new \Exception('There seems to be no configuration available for EXT:' . $extensionName . '. Please refer to the README for more details.', 1500032366);
+        }
+
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName]['originalExtensionName'])) {
+            $originalExtensionName = $GLOBALS['TYPO3_CONF_VARS']['EXT']['fbit_berecordlist']['modules'][$extensionName]['originalExtensionName'];
+            self::$extensionNameMap[$extensionName] = $originalExtensionName;
         }
 
         self::$extensionName = $extensionName;
@@ -91,6 +101,11 @@ class ModuleUtility
     static public function translate(string $key, string $extension): string
     {
         $ll = self::$moduleConfig['labels'];
+
+        if (isset(self::$extensionNameMap[$extension])) {
+            $extension = self::$extensionNameMap[$extension];
+        }
+      
         $translated = LocalizationUtility::translate($ll . ':' . $key, $extension);
         // translated can be null
         return ($translated !== null)?$translated:$key;
