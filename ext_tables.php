@@ -41,6 +41,7 @@ if (TYPO3_MODE === 'BE') {
                     'access' => 'user,group',
                     'icon' => $moduleConfiguration['icon'],
                     'labels' => $moduleConfiguration['labels'],
+                    'navigationComponentId' => (array_key_exists('navigationComponentId', $moduleConfiguration) ? $moduleConfiguration['navigationComponentId'] : 'typo3-pagetree'),
                 ]
             );
         }
