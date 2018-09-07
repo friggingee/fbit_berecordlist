@@ -107,7 +107,15 @@ class ModuleController extends ActionController
 
     protected function setStoragePid(): void
     {
+        $table = $this->table;
         $this->storagePid = (int)ModuleUtility::$moduleConfig['storagePid'];
+
+        // Retrieve storagePid from tables configuration if set
+        if (array_key_exists('tables', ModuleUtility::$moduleConfig)
+            && array_key_exists($table, ModuleUtility::$moduleConfig['tables'])
+            && array_key_exists('storagePid', ModuleUtility::$moduleConfig['tables'][$table])) {
+            $this->storagePid = (int)ModuleUtility::$moduleConfig['tables'][$table]['storagePid'];
+        }
 
         // if no storage pid is set, use the current page.
         if ($this->storagePid === 0) {

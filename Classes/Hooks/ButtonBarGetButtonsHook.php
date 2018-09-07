@@ -184,6 +184,13 @@ class ButtonBarGetButtonsHook
                     $buttonTypeColumn = (isset($buttonConfiguration['type_column']) ? $buttonConfiguration['type_column'] : null);
                     $buttonTitle = $buttonConfiguration['label'];
 
+                    // Retrieve storagePid from tables configuration if set
+                    if (array_key_exists('tables', ModuleUtility::$moduleConfig)
+                        && array_key_exists($buttonTable, ModuleUtility::$moduleConfig['tables'])
+                        && array_key_exists('storagePid', ModuleUtility::$moduleConfig['tables'][$buttonTable])) {
+                        $buttonStoragePid = (int)ModuleUtility::$moduleConfig['tables'][$buttonTable]['storagePid'];
+                    }
+
                     $moduleName = 'web_list';
                     $moduleToken = FormProtectionFactory::get()->generateToken(
                         'moduleCall',

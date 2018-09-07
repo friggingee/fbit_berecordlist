@@ -483,6 +483,15 @@ class RecordListDrawFooterHook
             $parameterParts = explode('=', $parameterString);
             if ($parameterParts[0] === 'table') {
                 $parameterParts[1] = $actionConfiguration['table'];
+            } else if ($parameterParts[0] === 'id') {
+                $table = $actionConfiguration['table'];
+
+                // Retrieve storagePid from tables configuration if set
+                if (array_key_exists('tables', ModuleUtility::$moduleConfig)
+                    && array_key_exists($table, ModuleUtility::$moduleConfig['tables'])
+                    && array_key_exists('storagePid', ModuleUtility::$moduleConfig['tables'][$table])) {
+                    $parameterParts[1] = (int)ModuleUtility::$moduleConfig['tables'][$table]['storagePid'];
+                }
             }
             $moduleUriParameters[$parameterParts[0]] = $parameterParts[1];
 

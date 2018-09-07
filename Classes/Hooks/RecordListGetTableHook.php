@@ -153,7 +153,7 @@ class RecordListGetTableHook implements RecordListGetTableHookInterface
         $selectedFieldsList = implode(',', array_unique(array_merge($this->defaultSelectedFields, $displayFields)));
         $recordList->setFields[$table] = $displayFields;
         $recordList->displayFields[$table] = $displayFields;
-        $recordList->fieldArray = array_merge($this->defaultFieldArray, $displayFields);
+        $recordList->fieldArray = array_unique(array_merge($this->defaultFieldArray, $displayFields));
     }
 
     /**
